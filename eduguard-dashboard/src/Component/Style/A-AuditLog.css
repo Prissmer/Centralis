@@ -1,0 +1,215 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+.audit-content {
+    margin-left: 280px;
+    padding: 30px;
+    background-color: #f8fafb;
+    min-height: 100vh;
+    width: calc(100% - 280px);
+    box-sizing: border-box;
+    font-family: 'Inter', sans-serif;
+}
+
+/* Header Section */
+.audit-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+.header-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.title-icon {
+    font-size: 24px;
+    color: #166534;
+}
+
+.audit-header h2 {
+    font-size: 20px;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+}
+
+.export-btn {
+    background: white;
+    border: 1px solid #e2e8f0;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-weight: 600;
+    color: #475569;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+}
+
+.export-btn:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+}
+
+/* Card & Toolbar */
+.audit-card {
+    background: white;
+    border-radius: 12px;
+    padding: 0; /* Table goes flush to the edges later */
+    box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+    border: 1px solid #eef2f6;
+    overflow: hidden;
+}
+
+.audit-toolbar {
+    padding: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.search-box {
+    position: relative;
+    flex: 1;
+    max-width: 400px;
+}
+
+.search-box input {
+    width: 100%;
+    padding: 10px 15px 10px 40px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    outline: none;
+    font-size: 14px;
+}
+
+.search-icon {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+}
+
+.filter-group {
+    display: flex;
+    gap: 12px;
+}
+
+.log-select, .filter-btn {
+    padding: 10px 15px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    background: white;
+    font-size: 14px;
+    color: #475569;
+    cursor: pointer;
+}
+
+/* Table Styling */
+.table-responsive {
+    overflow-x: auto;
+}
+
+.audit-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 900px;
+}
+
+.audit-table th {
+    background: #fcfdfe;
+    text-align: left;
+    padding: 16px 24px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.audit-table td {
+    padding: 18px 24px;
+    border-bottom: 1px solid #f8fafc;
+    font-size: 14px;
+    color: #334155;
+}
+
+.time-cell { color: #94a3b8; font-size: 13px; }
+.ip-cell { font-family: 'Courier New', monospace; color: #64748b; }
+
+/* Status & Tags */
+.status-dot {
+    font-weight: 600;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.status-dot.success { color: #166534; }
+.status-dot.success::before { content: ''; width: 8px; height: 8px; background: #22c55e; border-radius: 50%; }
+
+.status-dot.warning { color: #991b1b; }
+.status-dot.warning::before { content: ''; width: 8px; height: 8px; background: #ef4444; border-radius: 50%; }
+
+.action-tag {
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    background: #f1f5f9;
+    color: #475569;
+}
+
+/* Footer */
+.audit-footer {
+    padding: 20px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #fcfdfe;
+    color: #94a3b8;
+    font-size: 14px;
+}
+
+.pagination {
+    display: flex;
+    gap: 8px;
+}
+
+.page-btn {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #e2e8f0;
+    background: white;
+    border-radius: 8px;
+    cursor: pointer;
+    color: #64748b;
+    transition: all 0.2s;
+}
+
+.page-btn.active {
+    background: #166534;
+    color: white;
+    border-color: #166534;
+}
+
+.page-btn:hover:not(.active) {
+    background: #f8fafc;
+}
+
+@media (max-width: 1024px) {
+    .audit-content { margin-left: 0; width: 100%; }
+    .audit-toolbar { flex-direction: column; align-items: stretch; }
+}

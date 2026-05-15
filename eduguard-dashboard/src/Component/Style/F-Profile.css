@@ -1,0 +1,566 @@
+/* Profile.css - Completely isolated styles with unique prefixes */
+
+/* Main Profile Container - Unique class */
+.profile-page-wrapper {
+    min-height: 100vh;
+    background: #f5f7f5;
+    padding: 2rem;
+    margin-left: 280px;
+}
+
+/* Profile Grid Layout */
+.profile-page-grid {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1.5fr;
+    gap: 2rem;
+}
+
+/* Profile Info Card */
+.profile-info-card {
+    background: #ffffff;
+    border-radius: 24px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+    overflow: hidden;
+    border: 1px solid #eef2ee;
+}
+
+.profile-info-card-inner {
+    padding: 2rem;
+    text-align: center;
+}
+
+/* Profile Image Section */
+.profile-image-wrapper {
+    position: relative;
+    display: inline-block;
+    margin-bottom: 1.5rem;
+}
+
+.profile-user-image {
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid #ffffff;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+.profile-camera-btn {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    background: linear-gradient(135deg, #2E7D32 0%, #1B5E20 100%);
+    border: none;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.2rem;
+    box-shadow: 0 4px 12px rgba(46, 125, 50, 0.3);
+}
+
+.profile-camera-btn:hover {
+    background: linear-gradient(135deg, #1B5E20 0%, #0d3b0f 100%);
+}
+
+/* Profile Text */
+.profile-user-name {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1a2e1a;
+    margin: 0 0 0.5rem 0;
+    word-break: break-word;
+}
+
+.profile-user-role {
+    font-size: 0.95rem;
+    color: #2E7D32;
+    font-weight: 600;
+    margin: 0 0 1.5rem 0;
+    display: inline-block;
+    padding: 0.25rem 1rem;
+    background: #e8f5e9;
+    border-radius: 20px;
+}
+
+/* Info Items */
+.profile-info-box {
+    background: #fafbfa;
+    border-radius: 20px;
+    padding: 1.5rem;
+    text-align: left;
+    border: 1px solid #eef2ee;
+}
+
+.profile-info-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+    color: #4a674a;
+    font-size: 0.9rem;
+}
+
+.profile-info-item:last-child {
+    margin-bottom: 0;
+}
+
+.profile-info-item i {
+    width: 28px;
+    color: #2E7D32;
+    font-size: 1rem;
+    margin-right: 0.75rem;
+    flex-shrink: 0;
+}
+
+.profile-info-item span {
+    flex: 1;
+    word-break: break-word;
+}
+
+/* Edit Form Section */
+.profile-edit-section {
+    background: #ffffff;
+    border-radius: 24px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+    overflow: hidden;
+    border: 1px solid #eef2ee;
+}
+
+.profile-form-card {
+    padding: 2rem;
+}
+
+.profile-section-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1a2e1a;
+    margin: 0 0 1.5rem 0;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid #eef2ee;
+}
+
+/* Form Styles */
+.profile-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.profile-form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.profile-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.profile-form-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #5f8b5f;
+    text-transform: uppercase;
+}
+
+.profile-form-input {
+    padding: 0.75rem 1rem;
+    border: 2px solid #eef2ee;
+    border-radius: 14px;
+    font-size: 0.95rem;
+    font-family: inherit;
+    background: #ffffff;
+    color: #1a2e1a;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.profile-form-input:focus {
+    outline: none;
+    border-color: #2E7D32;
+    box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1);
+}
+
+/* Password Section */
+.profile-divider {
+    margin-top: 0.5rem;
+}
+
+.profile-password-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1a2e1a;
+    margin: 0 0 1rem 0;
+}
+
+.profile-password-space {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+/* Buttons */
+.profile-button-group {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.profile-save-btn,
+.profile-cancel-btn {
+    flex: 1;
+    padding: 0.875rem;
+    border: none;
+    border-radius: 14px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.3s ease;
+}
+
+.profile-save-btn {
+    background: linear-gradient(135deg, #2E7D32 0%, #1B5E20 100%);
+    color: white;
+}
+
+.profile-save-btn:hover {
+    background: linear-gradient(135deg, #1B5E20 0%, #0d3b0f 100%);
+    transform: translateY(-2px);
+}
+
+.profile-cancel-btn {
+    background: #fafbfa;
+    color: #4a674a;
+    border: 2px solid #eef2ee;
+}
+
+.profile-cancel-btn:hover {
+    background: #f0f4f0;
+    transform: translateY(-2px);
+}
+
+/* ======================================== */
+/* RESPONSIVE DESIGN FOR SMALLER SCREENS */
+/* ======================================== */
+
+/* Tablet Landscape (992px and below) */
+@media (max-width: 992px) {
+    .profile-page-wrapper {
+        margin-left: 0;
+        padding: 1.5rem;
+    }
+    
+    .profile-page-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    
+    .profile-info-card {
+        max-width: 500px;
+        margin: 0 auto;
+        width: 100%;
+    }
+    
+    .profile-edit-section {
+        max-width: 800px;
+        margin: 0 auto;
+        width: 100%;
+    }
+}
+
+/* Tablet Portrait (768px and below) */
+@media (max-width: 768px) {
+    .profile-page-wrapper {
+        padding: 1.25rem;
+    }
+    
+    .profile-info-card-inner,
+    .profile-form-card {
+        padding: 1.5rem;
+    }
+    
+    .profile-user-image {
+        width: 130px;
+        height: 130px;
+    }
+    
+    .profile-camera-btn {
+        width: 40px;
+        height: 40px;
+        font-size: 1rem;
+        bottom: 5px;
+        right: 5px;
+    }
+    
+    .profile-user-name {
+        font-size: 1.3rem;
+    }
+    
+    .profile-section-title {
+        font-size: 1.3rem;
+    }
+}
+
+/* Mobile Large (576px and below) */
+@media (max-width: 576px) {
+    .profile-page-wrapper {
+        padding: 1rem;
+    }
+    
+    .profile-info-card-inner,
+    .profile-form-card {
+        padding: 1.25rem;
+    }
+    
+    .profile-user-image {
+        width: 110px;
+        height: 110px;
+    }
+    
+    .profile-camera-btn {
+        width: 36px;
+        height: 36px;
+        font-size: 0.9rem;
+        bottom: 4px;
+        right: 4px;
+    }
+    
+    .profile-user-name {
+        font-size: 1.2rem;
+    }
+    
+    .profile-user-role {
+        font-size: 0.85rem;
+        padding: 0.2rem 0.8rem;
+    }
+    
+    .profile-section-title {
+        font-size: 1.2rem;
+        margin-bottom: 1rem;
+    }
+    
+    .profile-info-item {
+        font-size: 0.85rem;
+    }
+    
+    .profile-info-item i {
+        width: 24px;
+        font-size: 0.9rem;
+    }
+    
+    .profile-form-label {
+        font-size: 0.75rem;
+    }
+    
+    .profile-form-input {
+        padding: 0.65rem 0.875rem;
+        font-size: 0.9rem;
+    }
+    
+    .profile-password-title {
+        font-size: 0.95rem;
+    }
+}
+
+/* Mobile Small (480px and below) */
+@media (max-width: 480px) {
+    .profile-page-wrapper {
+        padding: 0.75rem;
+    }
+    
+    .profile-info-card-inner,
+    .profile-form-card {
+        padding: 1rem;
+    }
+    
+    .profile-user-image {
+        width: 100px;
+        height: 100px;
+    }
+    
+    .profile-camera-btn {
+        width: 32px;
+        height: 32px;
+        font-size: 0.85rem;
+        bottom: 3px;
+        right: 3px;
+    }
+    
+    .profile-user-name {
+        font-size: 1.1rem;
+    }
+    
+    .profile-user-role {
+        font-size: 0.8rem;
+        margin-bottom: 1rem;
+    }
+    
+    .profile-section-title {
+        font-size: 1.1rem;
+        padding-bottom: 0.5rem;
+    }
+    
+    .profile-info-box {
+        padding: 0.875rem;
+    }
+    
+    .profile-info-item {
+        font-size: 0.8rem;
+        margin-bottom: 0.75rem;
+    }
+    
+    .profile-info-item i {
+        width: 22px;
+        font-size: 0.85rem;
+        margin-right: 0.5rem;
+    }
+    
+    .profile-form-row {
+        grid-template-columns: 1fr;
+        gap: 0.875rem;
+    }
+    
+    .profile-form {
+        gap: 1rem;
+    }
+    
+    .profile-form-group {
+        gap: 0.4rem;
+    }
+    
+    .profile-form-label {
+        font-size: 0.7rem;
+    }
+    
+    .profile-form-input {
+        padding: 0.6rem 0.75rem;
+        font-size: 0.85rem;
+    }
+    
+    .profile-password-title {
+        font-size: 0.9rem;
+        margin-bottom: 0.75rem;
+    }
+    
+    .profile-password-space {
+        gap: 0.875rem;
+    }
+    
+    .profile-button-group {
+        flex-direction: column;
+        gap: 0.75rem;
+        margin-top: 0.75rem;
+    }
+    
+    .profile-save-btn,
+    .profile-cancel-btn {
+        padding: 0.75rem;
+        font-size: 0.9rem;
+        width: 100%;
+    }
+}
+
+/* Mobile Extra Small (375px and below) */
+@media (max-width: 375px) {
+    .profile-page-wrapper {
+        padding: 0.5rem;
+    }
+    
+    .profile-info-card-inner,
+    .profile-form-card {
+        padding: 0.875rem;
+    }
+    
+    .profile-user-image {
+        width: 90px;
+        height: 90px;
+    }
+    
+    .profile-camera-btn {
+        width: 30px;
+        height: 30px;
+        font-size: 0.8rem;
+    }
+    
+    .profile-user-name {
+        font-size: 1rem;
+    }
+    
+    .profile-user-role {
+        font-size: 0.75rem;
+    }
+    
+    .profile-section-title {
+        font-size: 1rem;
+    }
+    
+    .profile-info-item {
+        font-size: 0.75rem;
+    }
+    
+    .profile-info-item i {
+        width: 20px;
+        font-size: 0.8rem;
+    }
+    
+    .profile-form-input {
+        padding: 0.5rem 0.7rem;
+        font-size: 0.8rem;
+    }
+    
+    .profile-save-btn,
+    .profile-cancel-btn {
+        padding: 0.65rem;
+        font-size: 0.85rem;
+    }
+}
+
+/* Fix for very small devices in landscape mode */
+@media (max-width: 768px) and (orientation: landscape) {
+    .profile-page-wrapper {
+        padding: 1rem;
+    }
+    
+    .profile-page-grid {
+        gap: 1rem;
+    }
+    
+    .profile-info-card-inner,
+    .profile-form-card {
+        padding: 1rem;
+    }
+    
+    .profile-user-image {
+        width: 80px;
+        height: 80px;
+    }
+    
+    .profile-camera-btn {
+        width: 28px;
+        height: 28px;
+        font-size: 0.75rem;
+    }
+}
+
+/* Ensure buttons are tappable on mobile */
+@media (max-width: 768px) {
+    .profile-save-btn,
+    .profile-cancel-btn,
+    .profile-camera-btn {
+        -webkit-tap-highlight-color: transparent;
+    }
+    
+    .profile-save-btn:active,
+    .profile-cancel-btn:active {
+        transform: scale(0.98);
+    }
+}

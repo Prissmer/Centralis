@@ -1,0 +1,334 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* --- GENERAL LAYOUT --- */
+.req-management-wrapper {
+    margin-left: 280px;
+    padding: 30px;
+    background-color: #f8fafb;
+    min-height: 100vh;
+    width: calc(100% - 280px);
+    box-sizing: border-box;
+    font-family: 'Inter', sans-serif;
+    transition: all 0.3s ease;
+}
+
+/* --- HEADER --- */
+.req-view-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+.req-view-header h2 {
+    font-size: 24px;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+}
+
+.req-header-tools {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.req-search-box {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.req-search-box input {
+    background-color: #f1f5f9;
+    border: none;
+    padding: 10px 15px 10px 40px;
+    border-radius: 8px;
+    width: 250px;
+    outline: none;
+}
+
+.req-icon-gray {
+    position: absolute;
+    left: 15px;
+    color: #94a3b8;
+}
+
+.req-dot-indicator {
+    position: absolute;
+    top: 0; right: 0;
+    width: 8px; height: 8px;
+    background-color: #ef4444;
+    border-radius: 50%;
+    border: 2px solid #f8fafb;
+}
+
+/* --- CARD --- */
+.req-card-view {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+    border: 1px solid #f1f5f9;
+}
+
+/* --- TOOLBAR --- */
+.req-toolbar {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 30px;
+    gap: 15px;
+}
+
+.req-input-group {
+    position: relative;
+    display: flex;
+    align-items: center;
+    flex: 1;
+    max-width: 400px;
+}
+
+.req-input-group input {
+    border: 1px solid #e2e8f0;
+    padding: 10px 15px 10px 40px;
+    border-radius: 8px;
+    width: 100%;
+    outline: none;
+}
+
+.req-action-group {
+    display: flex;
+    gap: 15px;
+}
+
+.req-dropdown {
+    padding: 10px 15px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background: white;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.req-btn-primary {
+    background-color: #14532d;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+}
+
+/* --- TABLE (SCROLLABLE & FIXED PILL) --- */
+.req-table-responsive {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.req-data-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 800px;
+}
+
+.req-data-table th {
+    text-align: left;
+    color: #94a3b8;
+    font-size: 12px;
+    padding: 15px 10px;
+    border-bottom: 1px solid #f1f5f9;
+    text-transform: uppercase;
+}
+
+.req-data-table td {
+    padding: 15px 10px;
+    border-bottom: 1px solid #f8fafc;
+    font-size: 14px;
+    vertical-align: middle;
+}
+
+/* PILL BADGE FIX (Uses cat- prefix to avoid conflicts) */
+.req-pill-badge {
+    display: inline-block !important;
+    width: fit-content !important;
+    padding: 4px 14px;
+    border-radius: 50px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+    text-transform: capitalize;
+}
+
+.req-pill-badge.cat-materials { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
+.req-pill-badge.cat-assessment { background: #eff6ff; color: #3b82f6; }
+.req-pill-badge.cat-teacher_documents { background: #ecfdf5; color: #059669; }
+
+/* --- TOGGLE --- */
+.req-toggle {
+    position: relative;
+    display: inline-block;
+    width: 44px; height: 24px;
+}
+
+.req-toggle input { opacity: 0; width: 0; height: 0; }
+
+.req-toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: #cbd5e1;
+    transition: .4s;
+    border-radius: 24px;
+}
+
+.req-toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 18px; width: 18px;
+    left: 3px; bottom: 3px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input:checked + .req-toggle-slider { background-color: #14532d; }
+input:checked + .req-toggle-slider:before { transform: translateX(20px); }
+
+/* --- ACTIONS --- */
+.req-btn-stack { display: flex; gap: 15px; }
+.req-edit-btn, .req-delete-btn { cursor: pointer; color: #94a3b8; font-size: 16px; transition: 0.2s; }
+.req-edit-btn:hover { color: #3b82f6; }
+.req-delete-btn:hover { color: #ef4444; }
+
+/* --- MODAL (IMPROVED GRID) --- */
+.req-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 20px;
+}
+
+.req-modal-container {
+    background: white;
+    padding: 30px;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 450px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.req-modal-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.req-modal-title h3 { margin: 0; font-size: 20px; color: #1e293b; }
+.req-modal-title p { margin: 5px 0 0; font-size: 13px; color: #64748b; }
+.req-modal-close { color: #94a3b8; cursor: pointer; }
+
+.req-form-field { display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px; }
+.req-form-label { font-size: 14px; font-weight: 600; color: #1e293b; }
+.req-modal-input { padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; outline: none; font-size: 14px; }
+
+/* Modal Checkbox Grid */
+.req-checkbox-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    background: #f8fafc;
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    margin-top: 5px;
+}
+
+.req-check-item { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+.req-check-item input { accent-color: #14532d; width: 16px; height: 16px; }
+.req-check-item label { font-size: 13px; color: #475569; cursor: pointer; }
+
+.req-modal-footer { display: flex; gap: 10px; margin-top: 25px; }
+.req-btn-save { flex: 2; padding: 12px; border: none; border-radius: 8px; background: #14532d; color: white; font-weight: 600; cursor: pointer; }
+.req-btn-cancel { flex: 1; padding: 12px; border: none; border-radius: 8px; background: #f1f5f9; color: #475569; font-weight: 600; cursor: pointer; }
+
+/* --- PAGINATION ROW --- */
+.req-pagination-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 25px;
+    padding-top: 20px;
+    border-top: 1px solid #f1f5f9;
+}
+
+.req-page-info {
+    color: #64748b;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+/* --- PAGER BUTTONS --- */
+.req-pager {
+    display: flex;
+    gap: 8px;
+}
+
+.req-pager-btn {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #e2e8f0;
+    background-color: white;
+    border-radius: 8px;
+    color: #475569;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.req-pager-btn:hover {
+    background-color: #f8fafc;
+    border-color: #cbd5e1;
+}
+
+.req-pager-btn.is-active {
+    background-color: #14532d; /* Matches your green theme */
+    color: white;
+    border-color: #14532d;
+    box-shadow: 0 4px 6px -1px rgba(20, 83, 45, 0.2);
+}
+
+/* Responsive adjustment for pagination */
+@media (max-width: 480px) {
+    .req-pagination-row {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+    }
+}
+
+/* --- RESPONSIVE --- */
+@media (max-width: 1024px) {
+    .req-management-wrapper { margin-left: 0; width: 100%; padding: 20px; }
+}
+
+@media (max-width: 768px) {
+    .req-toolbar { flex-direction: column; }
+    .req-input-group { max-width: 100%; }
+    .req-action-group { width: 100%; justify-content: space-between; }
+    .req-view-header { flex-direction: column; align-items: flex-start; gap: 15px; }
+    .req-header-tools { width: 100%; justify-content: space-between; }
+    .req-checkbox-grid { grid-template-columns: 1fr; }
+}
