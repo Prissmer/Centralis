@@ -93,42 +93,90 @@ app.delete("/users/:id", async (req, res) => {
   }
 });
 
-// =========================
-// 3. UPLOAD MATERIAL (TO CLOUDINARY & SUPABASE)
-// =========================
+// ==========================================================================
+// FETCH MATERIALS WITH PAGINATION & FILTERS
+// ==========================================================================
+// ==========================================================================
+// FETCH MATERIALS WITH PAGINATION & FILTERS (BULLETPROOF VERSION)
+// ==========================================================================
+// ==========================================================================
+// DIAGNOSTIC FETCH MATERIALS ROUTE
+// ==========================================================================
+// ==========================================================================
+app.get("/api/materials", async (req, res) => {
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 10;
+  const search = req.query.search || "";
+  const subject = req.query.subject || "";
+  const date = req.query.date || "";
+  
+  // 🔥 NEW: Gets the active tab from the frontend (defaults to materials)
+  const category = req.query.category || "materials"; 
+
+  const start = (page - 1) * limit;
+  const end = start + limit - 1;
+
+  try {
+    let query = supabase
+      .from("submissions")
+      .select("*", { count: "exact" })
+      .eq("category", category) // 🔥 NEW: Only fetches files for the active tab
+      .order("created_at", { ascending: false });
+
+    if (search) query = query.ilike("title", `%${search}%`);
+    if (subject) query = query.ilike("subject", `%${subject}%`);
+    if (date) query = query.gte("created_at", `${date}T00:00:00.000Z`).lte("created_at", `${date}T23:59:59.999Z`);
+
+    const { data, count, error } = await query.range(start, end);
+    if (error) throw error;
+
+    res.json({ data, total: count, page, limit, totalPages: Math.ceil(count / limit) });
+  } catch (err) {
+    console.error("🔥 Fetch Materials Error:", err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ==========================================================================
+// 2. UPLOAD TO CLOUDINARY & SUPABASE
+// ==========================================================================
 app.post("/upload-material", upload.single("file"), async (req, res) => {
   try {
-    const {
-      subject,
-      document_type,
-      version,
-      academic_year,
-      school_year,
-      semester,
-      description,
-      userId,
+    // 🔥 THE FIX IS HERE: We make sure requirement_id is extracted from req.body
+    const { 
+      subject, 
+      document_type, 
+      version, 
+      academic_year, 
+      school_year, 
+      semester, 
+      description, 
+      userId, 
+      category,
+      requirement_id 
     } = req.body;
-
+    
     const file = req.file;
     if (!file) return res.status(400).json({ error: "No file uploaded" });
 
-    // 🔥 A. UPLOAD TO CLOUDINARY
+    // Determine Cloudinary folder based on dropdown choice
+    let folderCategory = "Uncategorized";
+    if (category === "materials") folderCategory = "Materials";
+    else if (category === "assessment") folderCategory = "Assessment";
+
+    const folderPath = `Centralis/${folderCategory}/${school_year}/${semester}`;
+
+    // A. Upload to Cloudinary
     const cloudForm = new FormData();
     cloudForm.append("file", file.buffer, { filename: file.originalname });
     cloudForm.append("upload_preset", process.env.CLOUDINARY_UPLOAD_PRESET);
-
-    const cloudRes = await fetch(
-      `https://api.cloudinary.com/v1_1/${process.env.CLOUDINARY_CLOUD_NAME}/auto/upload`,
-      { method: "POST", body: cloudForm }
-    );
-
+    cloudForm.append("folder", folderPath);
+    
+    const cloudRes = await fetch(`https://api.cloudinary.com/v1_1/${process.env.CLOUDINARY_CLOUD_NAME}/auto/upload`, { method: "POST", body: cloudForm });
     const cloudData = await cloudRes.json();
-    if (!cloudRes.ok) {
-      console.error("Cloudinary Error:", cloudData);
-      throw new Error("Cloudinary upload failed");
-    }
+    if (!cloudRes.ok) throw new Error("Cloudinary upload failed");
 
-    // 🔥 B. SAVE METADATA TO SUPABASE "submissions" TABLE
+    // B. Save to Supabase
     const { error } = await supabase.from("submissions").insert({
       title: file.originalname,
       file_url: cloudData.secure_url,
@@ -136,22 +184,18 @@ app.post("/upload-material", upload.single("file"), async (req, res) => {
       uploaded_by: userId,
       subject: subject,
       document_type: document_type,
-      version: version,
-      academic_year: academic_year,
       school_year: school_year,
       semester: semester,
-      description: description,
       file_type: file.mimetype,
       file_size: file.size,
-      submission_status: "pending",
+      submission_status: "submitted", 
       approval_status: "pending",
+      category: category, 
+      // Safely insert the requirement_id or leave it NULL if it's a freestyle upload
+      requirement_id: requirement_id ? requirement_id : null 
     });
 
-    if (error) {
-      console.error("Supabase Error Details:", error);
-      throw error;
-    }
-
+    if (error) throw error;
     res.json({ message: "Upload successful", url: cloudData.secure_url });
   } catch (err) {
     console.error("🔥 Server Upload Error:", err.message);
@@ -163,69 +207,59 @@ app.post("/upload-material", upload.single("file"), async (req, res) => {
 // 4. REQUIREMENTS MANAGEMENT (WITH PAGINATION)
 // ===================================
 
-// GET Requirements with Pagination, Search, and Category Filtering
 app.get("/requirements", async (req, res) => {
-  // Parse query params
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 10;
   const search = req.query.search || "";
   const category = req.query.category || "";
 
-  // Calculate inclusive range for Supabase
   const start = (page - 1) * limit;
   const end = start + limit - 1;
 
   try {
     let query = supabase
       .from("requirements")
-      .select("*", { count: "exact" }) // 'exact' is needed for frontend pager math
+      .select("*", { count: "exact" })
       .order("requirement_id", { ascending: true });
 
-    // Apply Search Filter
-    if (search) {
-      query = query.ilike("requirement_name", `%${search}%`);
-    }
+    if (search) query = query.ilike("requirement_name", `%${search}%`);
+    if (category) query = query.eq("category", category);
 
-    // Apply Category Filter
-    if (category) {
-      query = query.eq("category", category);
-    }
-
-    // Fetch the specific range (Server-Side Pagination)
     const { data, count, error } = await query.range(start, end);
-
     if (error) throw error;
 
-    res.json({
-      data,
-      total: count, // Total items matching filters
-      page,
-      limit,
-    });
+    res.json({ data, total: count, page, limit });
   } catch (err) {
     console.error("🔥 Fetch Requirements Error:", err.message);
     res.status(500).json({ error: err.message });
   }
 });
 
-// POST Create a new Requirement
 app.post("/requirements", async (req, res) => {
-  const { requirement_name, category, needs_approval, semester_based } = req.body;
+  const { 
+      subject, 
+      document_type, 
+      version, 
+      academic_year, 
+      school_year, 
+      semester, 
+      description, 
+      userId, 
+      category,
+      requirement_id // 🔥 NEW: Catch the bridge ID if it's sent
+    } = req.body;
 
   try {
     const { data, error } = await supabase.from("requirements").insert([
       {
         requirement_name,
         category,
-        // Ensure boolean conversion
         needs_approval: needs_approval === "true" || needs_approval === true,
         semester_based: semester_based === "true" || semester_based === true,
         active: true,
       },
     ]);
-
     if (error) throw error;
-
     res.json({ message: "Requirement successfully created!", data });
   } catch (err) {
     console.error("🔥 Create Requirement Error:", err.message);
@@ -233,6 +267,89 @@ app.post("/requirements", async (req, res) => {
   }
 });
 
+// ==========================================================================
+// 5. NEW: COMPLIANCE CHECKLIST & APPROVAL MATRIX
+// ==========================================================================
+
+// GET Aggregate data for the Checklist Matrix
+app.get("/api/compliance-checklist", async (req, res) => {
+  const { semester, school_year } = req.query;
+
+  try {
+    // 1. Fetch Instructors
+    const { data: teachers, error: teachersError } = await supabase
+      .from("profiles")
+      .select("id, first_name, last_name, email, role, status, specialization, employment_status")
+      // CHANGE THIS LINE to filter specifically for "instructor"
+      .eq("role", "instructor");
+
+    if (teachersError) throw teachersError;
+
+    // 2. Fetch Active Requirements
+    const { data: requirements, error: reqsError } = await supabase
+      .from("requirements")
+      .select("*")
+      .eq("active", true);
+
+    if (reqsError) throw reqsError;
+
+    // 3. Fetch Submissions (Filtered by semester/year if applicable)
+    let query = supabase
+      .from("submissions")
+      .select("*")
+      .eq("archived", false); // Only get active, non-archived files
+
+    if (semester) query = query.eq("semester", semester);
+    if (school_year) query = query.eq("school_year", school_year);
+
+    const { data: submissions, error: subsError } = await query;
+    if (subsError) throw subsError;
+
+    res.json({ teachers, requirements, submissions });
+  } catch (err) {
+    console.error("🔥 Compliance Engine Error:", err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST Approve or Reject a specific submission
+app.post("/api/submissions/review", async (req, res) => {
+  const { submission_id, status, remarks, admin_id } = req.body;
+
+  try {
+    // 1. Update the Submission record
+    const updateData = {
+      approval_status: status, // 'approved' or 'rejected'
+      remarks: status === "rejected" ? remarks : null,
+      approved_by: status === "approved" ? admin_id : null,
+      approved_at: status === "approved" ? new Date().toISOString() : null
+    };
+
+    const { data: subData, error: subError } = await supabase
+      .from("submissions")
+      .update(updateData)
+      .eq("submission_id", submission_id) // Make sure this matches your PK column name
+      .select();
+
+    if (subError) throw subError;
+
+    // 2. Log action to Audit Logs (from your DB spec)
+    const { error: auditError } = await supabase.from("audit_logs").insert({
+      user_id: admin_id,
+      action: status === "approved" ? "Approve File" : "Reject File",
+      target_table: "submissions",
+      target_id: submission_id, // INT or UUID matching your schema
+      description: `Admin ${status} submission ID ${submission_id}`
+    });
+
+    if (auditError) console.error("Audit log failed (non-fatal):", auditError.message);
+
+    res.json({ message: "Review processed successfully", data: subData });
+  } catch (err) {
+    console.error("🔥 Submission Review Error:", err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
 
 
 // =========================

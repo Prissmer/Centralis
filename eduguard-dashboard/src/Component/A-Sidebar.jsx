@@ -12,22 +12,22 @@ import {
   FaSignOutAlt, 
   FaBars, 
   FaTimes,
-  FaCheckCircle
+  FaCheckCircle,
+  FaRegCheckSquare // Added icon for Checklist
 } from "react-icons/fa";
 
 const Sidebar = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const { user, signOut } = useAuth(); // ✅ Changed 'logout' to 'signOut'
+  const { user, signOut } = useAuth(); 
   const navigate = useNavigate();
 
   const toggleSidebar = () => setIsOpen(!isOpen);
 
-  // ✅ Updated Handle Logout
   const handleLogout = async (e) => {
     e.preventDefault();
     if (window.confirm("Are you sure you want to logout?")) {
       try {
-        await signOut(); // ✅ Matches AuthContext
+        await signOut(); 
         navigate("/", { replace: true });
       } catch (error) {
         console.error("Logout failed:", error.message);
@@ -35,7 +35,6 @@ const Sidebar = () => {
     }
   };
 
-  // ✅ Logic for Display Name & Initials
   const displayName = user?.user_metadata?.full_name || user?.email || "Admin";
   const initials = displayName
     .split(" ")
@@ -80,6 +79,12 @@ const Sidebar = () => {
                   <FaThLarge /> <span>Dashboard</span>
                 </NavLink>
               </li>
+              {/* ✅ Added Checklist Page Item Here */}
+              <li>
+                <NavLink to="/checklist" className={({ isActive }) => isActive ? "active" : ""}>
+                  <FaRegCheckSquare /> <span>Checklist</span>
+                </NavLink>
+              </li>
               <li>
                 <NavLink to="/users" className={({ isActive }) => isActive ? "active" : ""}>
                   <FaUsers /> <span>User Management</span>
@@ -121,7 +126,7 @@ const Sidebar = () => {
             </ul>
           </div>
 
-          {/* ✅ Refactored Full Card Logout Button */}
+          {/* Card Logout Button */}
           <button type="button" className="user-card-logout" onClick={handleLogout}>
             <div className="avatar">{initials}</div>
             <div className="user-info">
