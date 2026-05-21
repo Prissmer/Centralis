@@ -309,6 +309,128 @@ input:checked + .req-toggle-slider:before { transform: translateX(20px); }
     border-color: #14532d;
     box-shadow: 0 4px 6px -1px rgba(20, 83, 45, 0.2);
 }
+/* --- A6 DEADLINE MANAGEMENT ADDITIONS --- */
+
+.req-btn-secondary {
+    background-color: #f1f5f9;
+    color: #475569;
+    border: 1px solid #e2e8f0;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+    transition: 0.2s;
+}
+
+.req-btn-secondary:hover {
+    background-color: #e2e8f0;
+    color: #1e293b;
+}
+
+.req-grid-2col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.req-text-danger {
+    color: #ef4444;
+    font-weight: 600;
+}
+
+.req-row-overdue {
+    background-color: #fef2f2 !important;
+}
+
+.req-overdue-tag {
+    display: inline-block;
+    background-color: #ef4444;
+    color: white;
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-left: 8px;
+    text-transform: uppercase;
+    font-weight: 700;
+}
+
+/* Adjust modal max-width to accommodate new side-by-side inputs */
+.req-modal-container {
+    max-width: 550px; 
+}
+/* --- NEW UI: TABS SYSTEM --- */
+.req-tabs-container {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.req-tab-btn {
+    background: none;
+    border: none;
+    padding: 12px 24px;
+    font-size: 15px;
+    font-weight: 600;
+    color: #64748b;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s ease;
+    text-transform: capitalize;
+}
+
+.req-tab-btn:hover {
+    color: #1e293b;
+}
+
+.req-tab-btn.active {
+    color: #14532d;
+    border-bottom: 3px solid #14532d;
+}
+
+/* --- NEW UI: DEADLINE BUTTON --- */
+.req-btn-deadline {
+    background-color: #f59e0b; /* Amber warning color */
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+    transition: 0.2s;
+    box-shadow: 0 4px 6px -1px rgba(245, 158, 11, 0.2);
+}
+
+.req-btn-deadline:hover {
+    background-color: #d97706;
+}
+
+/* --- ROW SELECTION HIGHLIGHTS --- */
+.req-row-checkbox {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    accent-color: #14532d;
+}
+
+.req-row-selected {
+    background-color: #ecfdf5 !important;
+}
+
+/* --- MODAL GRID TWEAKS --- */
+.req-grid-2col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
 
 /* Responsive adjustment for pagination */
 @media (max-width: 480px) {

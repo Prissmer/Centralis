@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./Style/F-Upload.css";
 import {
   FaCloudUploadAlt,
@@ -18,16 +18,50 @@ const Upload = () => {
     academic_year: "",
     semester: "",
     school_year: "",
-    description: ""
+    description: "",
+    category: "",           // 🔥 ADDED: Tracks category for Cloudinary folders
+    requirement_id: ""      // 🔥 ADDED: Tracks exact DB ID for the Checklist Matrix
   });
 
+  const [requirements, setRequirements] = useState([]);
   const [selectedFile, setSelectedFile] = useState(null);
   const [dragActive, setDragActive] = useState(false);
   const [uploadStatus, setUploadStatus] = useState(null);
 
+  // 🔥 ADDED: Fetch requirement IDs from your existing endpoint so they map perfectly to A-Checklist
+  useEffect(() => {
+    const fetchRequirements = async () => {
+      if (!formData.school_year || !formData.semester) return;
+      try {
+        const res = await fetch(
+          `http://localhost:5000/api/compliance-checklist?semester=${formData.semester}&school_year=${formData.school_year}`
+        );
+        const data = await res.json();
+        if (res.ok && data.requirements) {
+          setRequirements(data.requirements);
+        }
+      } catch (error) {
+        console.error("Failed to load checklist requirements", error);
+      }
+    };
+    fetchRequirements();
+  }, [formData.school_year, formData.semester]);
+
+  // Compute available requirements based on the chosen category
+  const availableRequirements = requirements.filter(
+    (req) => req.category === formData.category
+  );
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData((prev) => {
+      const newData = { ...prev, [name]: value };
+      // Reset requirement_id if the user changes the category
+      if (name === "category") {
+        newData.requirement_id = "";
+      }
+      return newData;
+    });
   };
 
   const validateAndSetFile = (file) => {
@@ -52,12 +86,11 @@ const Upload = () => {
       form.append("file", selectedFile);
       form.append("userId", user?.id || "");
 
-      // Append text fields
+      // Append text fields dynamically (this will now include category and requirement_id)
       Object.keys(formData).forEach((key) => {
         form.append(key, formData[key]);
       });
 
-      // Append file metadata
       form.append("file_type", selectedFile.type);
       form.append("file_size", selectedFile.size);
 
@@ -70,7 +103,6 @@ const Upload = () => {
 
       if (!res.ok) throw new Error(data.error || "Upload failed");
 
-      // SUCCESS HANDLING
       setUploadStatus({
         type: "success",
         message: "Material submitted successfully!"
@@ -84,11 +116,12 @@ const Upload = () => {
         academic_year: "",
         semester: "",
         school_year: "",
-        description: ""
+        description: "",
+        category: "",
+        requirement_id: ""
       });
       setSelectedFile(null);
 
-      // Clear the success message after 4 seconds
       setTimeout(() => {
         setUploadStatus(null);
       }, 4000);
@@ -107,7 +140,6 @@ const Upload = () => {
         </div>
 
         <div className="upload-content">
-          {/* POPUP MESSAGE BASED ON YOUR CSS */}
           {uploadStatus && (
             <div className={`status-message ${uploadStatus.type}`} style={{ marginBottom: '20px' }}>
               {uploadStatus.type === "loading" && <div className="loading-spinner"></div>}
@@ -120,7 +152,45 @@ const Upload = () => {
           <div className="upload-card">
             <form onSubmit={handleSubmit} className="upload-form">
               <div className="form-grid">
-                {/* Subject */}
+                
+                {/* 🔥 ADDED: Category Selection */}
+                <div className="form-field">
+                  <label className="form-label">Category <span className="required">*</span></label>
+                  <select className="form-select" name="category" value={formData.category} onChange={handleInputChange} required>
+                    <option value="">Select Category</option>
+                    <option value="teacher_documents">Teacher Documents</option>
+                    <option value="assessment">Assessments</option>
+                    <option value="materials">Materials</option>
+                  </select>
+                </div>
+
+                {/* 🔥 ADDED: Target Requirement Selection */}
+                <div className="form-field">
+                  <label className="form-label">Target Requirement <span className="required">*</span></label>
+                  <select className="form-select" name="requirement_id" value={formData.requirement_id} onChange={handleInputChange} required disabled={!formData.category}>
+                    <option value="">Select Requirement</option>
+                    {availableRequirements.map((req) => (
+                      <option key={req.requirement_id} value={req.requirement_id}>
+                        {req.requirement_name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="form-field">
+                  <label className="form-label">School Year <span className="required">*</span></label>
+                  <input className="form-input" name="school_year" placeholder="e.g. 2025-2026" value={formData.school_year} onChange={handleInputChange} required />
+                </div>
+
+                <div className="form-field">
+                  <label className="form-label">Semester</label>
+                  <select className="form-select" name="semester" value={formData.semester} onChange={handleInputChange} required>
+                    <option value="">Select Semester</option>
+                    <option value="1st Semester">1st Semester</option>
+                    <option value="2nd Semester">2nd Semester</option>
+                  </select>
+                </div>
+
                 <div className="form-field">
                   <label className="form-label">Subject <span className="required">*</span></label>
                   <select className="form-select" name="subject" value={formData.subject} onChange={handleInputChange} required>
@@ -130,7 +200,6 @@ const Upload = () => {
                   </select>
                 </div>
 
-                {/* Document Type */}
                 <div className="form-field">
                   <label className="form-label">Document Type <span className="required">*</span></label>
                   <select className="form-select" name="document_type" value={formData.document_type} onChange={handleInputChange} required>
@@ -141,7 +210,6 @@ const Upload = () => {
                   </select>
                 </div>
 
-                {/* Year Level */}
                 <div className="form-field">
                   <label className="form-label">Year Level <span className="required">*</span></label>
                   <select className="form-select" name="academic_year" value={formData.academic_year} onChange={handleInputChange} required>
@@ -153,30 +221,12 @@ const Upload = () => {
                   </select>
                 </div>
 
-                {/* School Year */}
-                <div className="form-field">
-                  <label className="form-label">School Year <span className="required">*</span></label>
-                  <input className="form-input" name="school_year" placeholder="e.g. 2025-2026" value={formData.school_year} onChange={handleInputChange} required />
-                </div>
-
-                {/* Semester */}
-                <div className="form-field">
-                  <label className="form-label">Semester</label>
-                  <select className="form-select" name="semester" value={formData.semester} onChange={handleInputChange}>
-                    <option value="">Select Semester</option>
-                    <option>1st Semester</option>
-                    <option>2nd Semester</option>
-                  </select>
-                </div>
-
-                {/* Version */}
                 <div className="form-field">
                   <label className="form-label">Version</label>
                   <input className="form-input" name="version" placeholder="e.g. 1.0" value={formData.version} onChange={handleInputChange} />
                 </div>
               </div>
 
-              {/* Drop Zone */}
               <div
                 className={`drop-zone ${dragActive ? "drag-active" : ""} ${selectedFile ? "has-file" : ""}`}
                 onDragOver={(e) => { e.preventDefault(); setDragActive(true); }}
@@ -205,13 +255,11 @@ const Upload = () => {
                 )}
               </div>
 
-              {/* Description */}
               <div className="form-field">
                 <label className="form-label">Description</label>
                 <textarea className="form-textarea" name="description" placeholder="Optional notes for the reviewer..." value={formData.description} onChange={handleInputChange} />
               </div>
 
-              {/* Actions */}
               <div className="form-actions">
                 <button type="submit" className="submit-btn" disabled={uploadStatus?.type === "loading"}>
                   {uploadStatus?.type === "loading" ? "Processing..." : "Submit Material"}

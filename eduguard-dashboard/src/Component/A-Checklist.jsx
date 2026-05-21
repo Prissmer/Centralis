@@ -6,6 +6,13 @@ import {
 import { useAuth } from "../Context/AuthContext";
 import "./Style/A-Checklist.css";
 
+// Helper: Cloudinary serves PDFs uploaded via /auto/ as 'raw' (Content-Disposition: attachment = auto-download).
+// Route through our backend proxy which re-serves with Content-Disposition: inline.
+const getInlinePdfUrl = (url) => {
+  if (!url) return url;
+  return `http://localhost:5000/api/proxy-pdf?url=${encodeURIComponent(url)}`;
+};
+
 const AChecklist = () => {
   const { user } = useAuth();
 
@@ -37,9 +44,6 @@ const AChecklist = () => {
       );
       const data = await res.json();
       
-      // 🔥 ADD THIS LINE: This prints the data to your browser console
-      console.log("🚀 CHECKLIST DATA FROM BACKEND:", data); 
-
       if (!res.ok) throw new Error(data.error || "Failed to load database elements");
       
       setTeachers(data.teachers || []);
@@ -65,10 +69,11 @@ const AChecklist = () => {
   const matrix = useMemo(() => {
     const map = {};
     teachers.forEach(t => {
-      map[t.id] = {}; // CHANGED to t.id
+      map[t.id] = {};
       currentColumns.forEach(c => {
+        // 🔥 THE FIX: We must use uploaded_by to match your Supabase database schema!
         const sub = submissions.find(
-          s => s.teacher_id === t.id && s.requirement_id === c.requirement_id // CHANGED to t.id
+          s => s.uploaded_by === t.id && s.requirement_id === c.requirement_id 
         );
         map[t.id][c.requirement_id] = sub || null;
       });
@@ -88,7 +93,7 @@ const AChecklist = () => {
 
     switch (sub.approval_status) {
       case "approved":
-        return <span className="status-cell approved"><FaCheckCircle /> Approved {sub.is_late && <span className="badge-late">Late</span>}</span>;
+        return <span className="status-cell approved"><FaCheckCircle /> Approved</span>;
       case "pending":
         return <span className="status-cell pending"><FaClock /> Pending</span>;
       case "rejected":
@@ -101,13 +106,12 @@ const AChecklist = () => {
   // --- FILTER ROWS ENGINE ---
   const filteredTeachers = useMemo(() => {
     return teachers.filter(t => {
-      // CHANGED: Using first_name and last_name
       const matchesSearch = `${t.first_name || ''} ${t.last_name || ''}`.toLowerCase().includes(searchTerm.toLowerCase());
       
       const empStatus = t.employment_status ? t.employment_status.toLowerCase().replace("-", "_") : "";
       const matchesEmp = employmentFilter === "All" || empStatus === employmentFilter.toLowerCase().replace("-", "_");
       
-      const teacherSubs = Object.values(matrix[t.id] || {}); // CHANGED to t.id
+      const teacherSubs = Object.values(matrix[t.id] || {});
       
       let matchesStatus = true;
       if (statusFilter !== "All") {
@@ -135,14 +139,14 @@ const AChecklist = () => {
 
   // --- ROW INTERACTION HANDLER ---
   const handleCellClick = (teacher, req) => {
-    const sub = matrix[teacher.id][req.requirement_id]; // CHANGED to t.id
-    if (!sub) return; 
-    setSelectedCell({ teacher, req, sub });
-    setReviewRemarks(sub.remarks || "");
+    const sub = matrix[teacher.id]?.[req.requirement_id];
+    // Open panel for all cells — sub may be null (shows "No Submission" state)
+    setSelectedCell({ teacher, req, sub: sub || null });
+    setReviewRemarks(sub?.remarks || "");
   };
 
   // --- POST ACTION COMPLIANCE EVALUATION ---
-  const handleReviewAction = async (statusValue) => {
+ const handleReviewAction = async (statusValue) => {
     if (statusValue === "rejected" && !reviewRemarks.trim()) {
       return alert("Please enter rejection remarks first.");
     }
@@ -153,7 +157,8 @@ const AChecklist = () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          submission_id: selectedCell.sub.submission_id,
+          // 🔥 THE FIX: Change .submission_id to .id here
+          submission_id: selectedCell.sub.id, 
           status: statusValue,
           remarks: reviewRemarks,
           admin_id: user?.id
@@ -192,7 +197,7 @@ const AChecklist = () => {
     document.body.removeChild(link);
   };
 
-  if (loading) return <div className="loading-state-container">Gathering matching matrix configurations...</div>;
+  if (loading) return <div className="loading-state-container" style={{padding: '40px', textAlign: 'center'}}>Gathering matching matrix configurations...</div>;
 
   return (
     <div className="checklist-container">
@@ -261,34 +266,45 @@ const AChecklist = () => {
             </tr>
           </thead>
           <tbody>
-            {filteredTeachers.map(teacher => {
-              
-              // 🔥 THE FIX: We calculate the approved count safely by mapping through currentColumns directly
-              const approvedItemsCount = currentColumns.filter(c => {
-                const s = matrix[teacher.id]?.[c.requirement_id];
-                return s && (s.approval_status === "approved" || (!c.needs_approval && s.submission_status === "submitted"));
-              }).length;
+            {filteredTeachers.length === 0 ? (
+               <tr>
+                 <td colSpan={currentColumns.length + 2} style={{textAlign: 'center', padding: '30px'}}>
+                   No faculty profiles match your current search and filter settings.
+                 </td>
+               </tr>
+            ) : (
+               filteredTeachers.map(teacher => {
+                const approvedItemsCount = currentColumns.filter(c => {
+                  const s = matrix[teacher.id]?.[c.requirement_id];
+                  return s && (s.approval_status === "approved" || (!c.needs_approval && s.submission_status === "submitted"));
+                }).length;
 
-              return (
-                <tr key={teacher.id}>
-                  <td className="faculty-info-cell">
-                    <strong>{teacher.first_name} {teacher.last_name}</strong>
-                    <span>{teacher.specialization || "General Core"} • {(teacher.employment_status || "N/A").toUpperCase()}</span>
-                  </td>
-                  <td>
-                    <span className="progress-badge">{approvedItemsCount} / {currentColumns.length}</span>
-                  </td>
-                  {currentColumns.map(req => {
-                    const sub = matrix[teacher.id]?.[req.requirement_id];
-                    return (
-                      <td key={req.requirement_id} className="interactive-status-cell" onClick={() => handleCellClick(teacher, req)}>
-                        {renderStatus(sub, req.needs_approval)}
-                      </td>
-                    );
-                  })}
-                </tr>
-              );
-            })}
+                return (
+                  <tr key={teacher.id}>
+                    <td className="faculty-info-cell">
+                      <strong>{teacher.first_name} {teacher.last_name}</strong>
+                      <span>{teacher.specialization || "General Core"} • {(teacher.employment_status || "N/A").toUpperCase()}</span>
+                    </td>
+                    <td>
+                      <span className="progress-badge">{approvedItemsCount} / {currentColumns.length}</span>
+                    </td>
+                     {currentColumns.map(req => {
+                      const sub = matrix[teacher.id]?.[req.requirement_id];
+                      return (
+                        <td
+                          key={req.requirement_id}
+                          className="interactive-status-cell"
+                          style={{ cursor: sub ? 'pointer' : 'default' }}
+                          onClick={() => handleCellClick(teacher, req)}
+                        >
+                          {renderStatus(sub, req.needs_approval)}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                );
+              })
+            )}
           </tbody>
         </table>
       </div>
@@ -296,36 +312,124 @@ const AChecklist = () => {
       {/* Overlay Drawer Sheet Code Block */}
       {selectedCell && (
         <div className="review-side-panel-overlay" onClick={() => setSelectedCell(null)}>
-          <div className="review-side-panel" onClick={(e) => e.stopPropagation()}>
+          <div className="review-side-panel" onClick={(e) => e.stopPropagation()} style={{ width: '600px', maxWidth: '90vw' }}> {/* Made slightly wider for reading */}
             <h3>Document Approval Review Hub</h3>
             <hr />
-            <p><strong>Faculty:</strong> {selectedCell.teacher.first_name} {selectedCell.teacher.last_name}</p>
-            <p><strong>Requirement Target:</strong> {selectedCell.req.requirement_name}</p>
-            <p><strong>Current State:</strong> <span style={{textTransform: 'uppercase'}}>{selectedCell.sub.approval_status || selectedCell.sub.submission_status}</span></p>
-            <p><strong>Submitted Date:</strong> {new Date(selectedCell.sub.uploaded_at).toLocaleString()}</p>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px' }}>
+              <div>
+                <p><strong>Faculty:</strong> {selectedCell.teacher.first_name} {selectedCell.teacher.last_name}</p>
+                <p><strong>Requirement Target:</strong> {selectedCell.req.requirement_name}</p>
+              </div>
+              <div style={{ textAlign: 'right' }}>
+                <p><strong>Status:</strong> <span style={{textTransform: 'uppercase', fontWeight: 'bold'}}>
+                  {selectedCell.sub
+                    ? (selectedCell.sub.approval_status || selectedCell.sub.submission_status)
+                    : 'MISSING'}
+                </span></p>
+                {selectedCell.sub && (
+                  <p><strong>Date:</strong> {new Date(selectedCell.sub.created_at).toLocaleDateString()}</p>
+                )}
+              </div>
+            </div>
             
-            <a href={selectedCell.sub.file_url} target="_blank" rel="noreferrer" className="btn-primary-link"><FaEye /> Open Document Stream</a>
+           {/* DOCUMENT VIEWER or NO-SUBMISSION STATE */}
+            {!selectedCell.sub ? (
+              // No submission yet — show placeholder
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '400px', backgroundColor: '#f9f9f9', borderRadius: '8px', border: '1px dashed #ccc', marginBottom: '20px', color: '#999', textAlign: 'center', padding: '20px' }}>
+                <FaTimesCircle style={{ fontSize: '48px', marginBottom: '12px', color: '#ddd' }} />
+                <h3 style={{ margin: '0 0 8px 0', color: '#aaa' }}>No Submission Found</h3>
+                <p style={{ margin: 0, fontSize: '14px' }}>This faculty member has not submitted this requirement yet.</p>
+              </div>
+            ) : (
+              <>
+                {/* DOCUMENT VIEWER — Image: direct render | PDF: direct iframe | Word/Excel: MS Office Online */}
+                <div className="document-viewer-box" style={{ width: '100%', height: '400px', backgroundColor: '#f0f0f0', borderRadius: '8px', overflow: 'hidden', border: '1px solid #ddd', marginBottom: '20px' }}>
+                  
+                  {selectedCell.sub.file_type && selectedCell.sub.file_type.includes("image") ? (
+                    // 1. IMAGE — render directly
+                    <img 
+                      src={selectedCell.sub.file_url} 
+                      alt="Submission" 
+                      style={{ width: '100%', height: '100%', objectFit: 'contain' }} 
+                    />
 
-            {/* Actions Display */}
-            {selectedCell.req.needs_approval && selectedCell.sub.approval_status === "pending" && (
+                  ) : selectedCell.sub.file_type === "text/plain" ? (
+                    // 2. DUMMY / PLAIN TEXT TEST FILES
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', padding: '20px', textAlign: 'center', color: '#666' }}>
+                      <FaEye style={{ fontSize: '48px', marginBottom: '10px', color: '#ccc' }} />
+                      <h3>Testing File Detected</h3>
+                      <p>This is a plain text testing document. The system successfully routed and saved it.</p>
+                    </div>
+
+                  ) : selectedCell.sub.file_type === "application/pdf" ? (
+                    // 3. PDF — inline via Cloudinary image delivery (prevents auto-download)
+                    <iframe
+                      src={getInlinePdfUrl(selectedCell.sub.file_url)}
+                      width="100%"
+                      height="100%"
+                      frameBorder="0"
+                      title="PDF Preview"
+                      key={selectedCell.sub.file_url}
+                    ></iframe>
+
+                  ) : (
+                    // 4. WORD / EXCEL — Microsoft Office Online viewer (reliable with public URLs)
+                    <iframe
+                      src={`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(selectedCell.sub.file_url)}`}
+                      width="100%"
+                      height="100%"
+                      frameBorder="0"
+                      title="Office Document Preview"
+                      key={selectedCell.sub.file_url}
+                    ></iframe>
+                  )}
+                </div>
+
+                {/* FULL SCREEN BUTTON */}
+                <a 
+                  href={
+                    selectedCell.sub.file_type && selectedCell.sub.file_type.includes("image")
+                      ? selectedCell.sub.file_url
+                      : selectedCell.sub.file_type === "application/pdf"
+                        ? getInlinePdfUrl(selectedCell.sub.file_url)
+                        : `https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent(selectedCell.sub.file_url)}`
+                  } 
+                  target="_blank" 
+                  rel="noreferrer" 
+                  className="btn-primary-link" 
+                  style={{display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '10px 15px', background: '#2E7D32', color: 'white', textDecoration: 'none', borderRadius: '8px', marginBottom: '15px', width: '100%', justifyContent: 'center'}}
+                >
+                  <FaEye /> View Document Full Screen
+                </a>
+              </>
+            )}
+
+
+            {/* Actions Display — only shown when sub exists and is pending */}
+            {selectedCell.sub && selectedCell.req.needs_approval && selectedCell.sub.approval_status === "pending" && (
               <div className="approval-form-container">
-                <label>Rejection Reason Details (Required if executing rejection parameters)</label>
-                <textarea value={reviewRemarks} onChange={(e) => setReviewRemarks(e.target.value)} placeholder="Type feedback reasons here..." />
-                <div className="split-action-row">
-                  <button className="btn-approve" disabled={actionLoading} onClick={() => handleReviewAction("approved")}>Approve</button>
-                  <button className="btn-reject" disabled={actionLoading} onClick={() => handleReviewAction("rejected")}>Reject</button>
+                <label style={{display: 'block', marginBottom: '8px', fontWeight: 'bold'}}>Rejection Reason Details (Required if executing rejection parameters)</label>
+                <textarea 
+                  value={reviewRemarks} 
+                  onChange={(e) => setReviewRemarks(e.target.value)} 
+                  placeholder="Type feedback reasons here..." 
+                  style={{width: '100%', minHeight: '80px', padding: '10px', borderRadius: '8px', border: '1px solid #ccc', marginBottom: '15px'}}
+                />
+                <div className="split-action-row" style={{display: 'flex', gap: '10px'}}>
+                  <button className="btn-approve" style={{flex: 1, padding: '12px', background: '#2E7D32', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold'}} disabled={actionLoading} onClick={() => handleReviewAction("approved")}>Approve Submission</button>
+                  <button className="btn-reject" style={{flex: 1, padding: '12px', background: '#d32f2f', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold'}} disabled={actionLoading} onClick={() => handleReviewAction("rejected")}>Reject Submission</button>
                 </div>
               </div>
             )}
 
-            {selectedCell.sub.approval_status === "rejected" && (
-              <div className="remarks-history-box">
-                <h4>Historical Evaluation Remarks:</h4>
-                <p>{selectedCell.sub.remarks || "No remark evaluation values specified."}</p>
+            {selectedCell.sub?.approval_status === "rejected" && (
+              <div className="remarks-history-box" style={{marginTop: '20px', padding: '15px', background: '#feebee', borderRadius: '8px', borderLeft: '4px solid #d32f2f'}}>
+                <h4 style={{margin: '0 0 10px 0'}}>Historical Evaluation Remarks:</h4>
+                <p style={{margin: 0}}>{selectedCell.sub.remarks || "No remark evaluation values specified."}</p>
               </div>
             )}
 
-            <button className="close-panel-btn" onClick={() => setSelectedCell(null)}>Dismiss Evaluation Sheet</button>
+            <button className="close-panel-btn" style={{marginTop: '20px', width: '100%', padding: '12px', background: '#f5f5f5', border: '1px solid #ddd', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold'}} onClick={() => setSelectedCell(null)}>Dismiss Evaluation Sheet</button>
           </div>
         </div>
       )}

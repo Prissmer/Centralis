@@ -1,32 +1,47 @@
-/* Materials.css - Updated with fixed dropdown positioning */
+/* F-Materials.css - Conflict Free Unique Scope Classnames */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
-.materials-container {
+html, body {
+  max-width: 100%;
+  overflow-x: hidden;
+  margin: 0;
+  padding: 0;
+}
+
+.acad-res-viewport-container {
   font-family: 'Inter', sans-serif;
   min-height: 100vh;
   background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  width: 100%;
+  box-sizing: border-box;
 }
 
-.materials {
+.acad-res-layout-shell {
   min-height: 100vh;
-  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
 }
 
-/* Header */
-.materials-header {
+/* ── STICKY HEADER BOUNDS ── */
+.acad-res-sticky-header {
   position: fixed;
   top: 0;
   right: 0;
   left: 280px;
+  width: calc(100% - 280px); 
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
   padding: 20px 32px;
   border-bottom: 1px solid #e2e8f0;
   z-index: 99;
   transition: all 0.3s ease;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
-.materials-header h2 {
+.acad-res-sticky-header h2 {
   font-size: 28px;
   font-weight: 700;
   background: linear-gradient(135deg, #166534, #14532d);
@@ -36,107 +51,118 @@
   margin: 0;
 }
 
-.materials-header p {
+.acad-res-sticky-header p {
   font-size: 13px;
   color: #64748b;
   margin-top: 4px;
 }
 
-/* Content */
-.materials-content {
-  margin-top: 90px;
+/* ── NAVIGATION SWITCHES TABS ── */
+.acad-res-tabs-bar {
+  margin-top: 110px; 
   margin-left: 280px;
-  padding: 32px;
-  transition: all 0.3s ease;
+  padding: 0 32px;
+  display: flex;
+  gap: 12px;
 }
 
-.materials-card {
+.acad-res-toggle-tab {
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #64748b;
+  background: #e2e8f0;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: 'Inter', sans-serif;
+}
+
+.acad-res-toggle-tab:hover {
+  background: #cbd5e1;
+  color: #0f172a;
+}
+
+.acad-res-toggle-tab.is-active {
+  background: linear-gradient(135deg, #166534, #14532d);
+  color: white;
+  box-shadow: 0 4px 12px rgba(22, 101, 52, 0.2);
+}
+
+/* ── AREA SECTOR CONTAINERS ── */
+.acad-res-content-area {
+  margin-left: 280px;
+  padding: 16px 32px 32px 32px;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+  width: calc(100% - 280px);
+}
+
+.acad-res-main-card {
   background: white;
   border-radius: 24px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   border: 1px solid #f0f2f5;
   padding: 28px;
-  transition: all 0.3s ease;
+  box-sizing: border-box;
+  width: 100%;
 }
 
-/* Filters Section */
-.filters-section {
+/* ── CONTROL FILTERS TOOLBAR ── */
+.acad-res-toolbar {
   display: flex;
-  flex-wrap: wrap;
   gap: 16px;
   margin-bottom: 24px;
+  align-items: center;
+  width: 100%;
+  box-sizing: border-box;
 }
 
-.search-wrapper {
+.acad-res-search-box {
   flex: 1;
   position: relative;
-  min-width: 250px;
 }
 
-.search-icon {
+.acad-res-search-box svg {
   position: absolute;
-  left: 14px;
+  left: 16px;
   top: 50%;
   transform: translateY(-50%);
   color: #94a3b8;
+  pointer-events: none;
   font-size: 16px;
 }
 
-.search-input {
+.acad-res-search-box input {
   width: 100%;
-  padding: 12px 40px 12px 42px;
+  padding: 12px 16px 12px 46px;
   border: 1px solid #e2e8f0;
   border-radius: 14px;
   font-size: 14px;
   outline: none;
-  transition: all 0.2s ease;
   font-family: 'Inter', sans-serif;
+  box-sizing: border-box;
+  transition: all 0.2s ease;
 }
 
-.search-input:focus {
+.acad-res-search-box input:focus {
   border-color: #166534;
   box-shadow: 0 0 0 3px rgba(22, 101, 52, 0.1);
 }
 
-.clear-search {
-  position: absolute;
-  right: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  background: none;
-  border: none;
-  color: #94a3b8;
-  cursor: pointer;
-  padding: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  transition: all 0.2s ease;
-}
-
-.clear-search:hover {
-  color: #ef4444;
-  background: #fef2f2;
-}
-
-.filter-group {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-/* Custom Dropdown Styles */
-.custom-dropdown {
+/* ── MENUS DROPDOWN ACTIONS ── */
+.acad-res-menu-anchor {
   position: relative;
-  min-width: 160px;
+  flex-shrink: 0;
+  min-width: 170px;
 }
 
-.dropdown-btn {
+.acad-res-dropdown-trigger {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 10px;
   padding: 12px 16px;
   background: white;
   border: 1px solid #e2e8f0;
@@ -144,220 +170,121 @@
   font-size: 14px;
   color: #334155;
   cursor: pointer;
-  transition: all 0.2s ease;
-  font-family: 'Inter', sans-serif;
   width: 100%;
-  white-space: nowrap;
+  box-sizing: border-box;
+  font-family: 'Inter', sans-serif;
+  transition: all 0.2s ease;
 }
 
-.dropdown-btn:hover {
+.acad-res-dropdown-trigger:hover {
   border-color: #166534;
   background: #f8fafc;
 }
 
-.dropdown-btn.active {
-  border-color: #166534;
-  background: #f0fdf4;
-  color: #166534;
-}
-
-.dropdown-icon {
-  transition: transform 0.2s ease;
-  font-size: 12px;
-}
-
-.dropdown-icon.rotate {
-  transform: rotate(180deg);
-}
-
-.dropdown-menu {
+.acad-res-dropdown-list {
   position: absolute;
-  top: calc(100% + 8px);
+  top: calc(100% + 6px);
   left: 0;
-  right: 0;
+  width: 100%;
   background: white;
   border: 1px solid #e2e8f0;
   border-radius: 14px;
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
-  z-index: 1000;
-  max-height: 280px;
+  z-index: 110;
+  max-height: 250px;
   overflow-y: auto;
-  animation: dropdownFadeIn 0.2s ease;
+  margin: 0;
+  padding: 6px 0;
+  list-style: none;
 }
 
-@keyframes dropdownFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.dropdown-item {
+.acad-res-dropdown-list li {
   padding: 10px 16px;
   cursor: pointer;
-  transition: all 0.2s ease;
   font-size: 14px;
   color: #334155;
+  transition: all 0.2s ease;
 }
 
-.dropdown-item:hover {
-  background: #f8fafc;
-  color: #166534;
-}
-
-.dropdown-item.selected {
+.acad-res-dropdown-list li:hover {
   background: #f0fdf4;
   color: #166534;
-  font-weight: 500;
 }
 
-.clear-filters-btn {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 16px;
-  background: #fef2f2;
-  border: 1px solid #fecaca;
-  border-radius: 14px;
-  font-size: 14px;
-  color: #dc2626;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-family: 'Inter', sans-serif;
-  font-weight: 500;
-}
-
-.clear-filters-btn:hover {
-  background: #fee2e2;
-  border-color: #fca5a5;
-}
-
-.results-count {
-  font-size: 13px;
-  color: #64748b;
-  margin-bottom: 20px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid #eef2ff;
-}
-
-/* Desktop Table */
-.desktop-table {
+/* ── SCROLL SAFE DATA TABLE MECHANICS ── */
+.acad-res-table-scroller {
+  width: 100%;
   overflow-x: auto;
+  border-radius: 14px;
+  box-sizing: border-box;
+  border: 1px solid #f0f2f5;
 }
 
-.materials-table {
+.acad-res-data-table {
   width: 100%;
   border-collapse: collapse;
+  text-align: left;
+  min-width: 850px; /* Guarantees layout structural shapes do not distort or compress info */
 }
 
-.materials-table thead th {
-  text-align: left;
-  padding: 16px 12px;
+.acad-res-data-table th {
+  padding: 16px 16px;
   font-weight: 600;
   color: #64748b;
   font-size: 13px;
   border-bottom: 2px solid #f0f2f5;
+  background: #f8fafc;
+  white-space: nowrap;
 }
 
-.material-row {
-  border-bottom: 1px solid #f8fafc;
+.acad-res-data-table td {
+  padding: 16px 16px;
+  font-size: 14px;
+  color: #334155;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.acad-res-data-table tbody tr {
   transition: all 0.2s ease;
 }
 
-.material-row:hover {
+.acad-res-data-table tbody tr:hover {
   background: #fafcff;
-  transform: translateX(2px);
 }
 
-.material-row td {
-  padding: 16px 12px;
-}
-
-/* Subject Cell */
-.subject-info {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.subject-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-}
-
-.subject-icon.icon-primary {
+.acad-res-subject-tag {
   background: rgba(22, 101, 52, 0.1);
   color: #166534;
-}
-
-.subject-icon.icon-secondary {
-  background: rgba(37, 99, 235, 0.1);
-  color: #2563eb;
-}
-
-.subject-icon.icon-accent {
-  background: rgba(245, 158, 11, 0.1);
-  color: #f59e0b;
-}
-
-.subject-name {
-  font-weight: 600;
-  color: #0f172a;
-  font-size: 14px;
-}
-
-.subject-code {
-  font-size: 11px;
-  color: #94a3b8;
-  margin-top: 2px;
-}
-
-/* Document Cell */
-.document-info {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 14px;
-  color: #334155;
-}
-
-.document-info svg {
-  font-size: 18px;
-  color: #dc2626;
-}
-
-/* Version Badge */
-.version-badge {
-  background: #f1f5f9;
-  color: #166534;
-  padding: 4px 10px;
+  padding: 6px 12px;
   border-radius: 10px;
   font-size: 12px;
   font-weight: 600;
   display: inline-block;
 }
 
-/* Year Cell */
-.year-cell {
-  font-size: 14px;
-  color: #64748b;
+.acad-res-file-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
-/* Download Button */
-.download-btn {
+.acad-res-file-cell svg {
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.acad-res-file-cell svg[class*="FaFilePdf"] { color: #ef4444; }
+.acad-res-file-cell svg[class*="FaFilePowerpoint"] { color: #f97316; }
+.acad-res-file-cell svg[class*="FaFileWord"] { color: #3b82f6; }
+.acad-res-file-cell svg[class*="FaFileAlt"] { color: #64748b; }
+
+.acad-res-btn-download {
   background: linear-gradient(135deg, #166534, #14532d);
   color: white;
   border: none;
-  padding: 8px 18px;
+  padding: 8px 16px;
   border-radius: 10px;
   font-size: 13px;
   font-weight: 500;
@@ -366,323 +293,88 @@
   align-items: center;
   gap: 8px;
   transition: all 0.2s ease;
-  font-family: 'Inter', sans-serif;
 }
 
-.download-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(22, 101, 52, 0.3);
-  background: linear-gradient(135deg, #14532d, #0f3d24);
+.acad-res-btn-download:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(22, 101, 52, 0.25);
 }
 
-/* Mobile Grid */
-.mobile-grid {
-  display: none;
+.acad-res-status-msg {
+  text-align: center;
+  padding: 40px 0;
+  color: #64748b;
+}
+
+/* ── PAGINATOR FOOTER ── */
+.acad-res-paginator {
+  display: flex;
+  justify-content: center;
+  align-items: center;
   gap: 16px;
-  flex-direction: column;
+  margin-top: 24px;
+  font-size: 14px;
+  color: #475569;
 }
 
-.material-card {
-  background: white;
-  border: 1px solid #e2e8f0;
-  border-radius: 16px;
-  padding: 16px;
+.acad-res-page-btn {
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  background: #e2e8f0;
+  color: #475569;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
   transition: all 0.2s ease;
 }
 
-.material-card:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  transform: translateY(-2px);
-}
-
-.material-card-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 12px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid #f0f2f5;
-}
-
-.material-icon {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 20px;
-}
-
-.material-header-info {
-  flex: 1;
-}
-
-.material-header-info h4 {
-  margin: 0;
-  font-size: 15px;
-  font-weight: 600;
+.acad-res-page-btn:hover:not(:disabled) {
+  background: #cbd5e1;
   color: #0f172a;
 }
 
-.material-header-info .subject-code {
-  font-size: 11px;
-  color: #94a3b8;
+.acad-res-page-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
-.material-card-body {
-  margin-bottom: 16px;
-}
-
-.document-title {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 14px;
-  color: #334155;
-  margin-bottom: 10px;
-}
-
-.document-title svg {
-  font-size: 18px;
-  color: #dc2626;
-}
-
-.material-meta {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-top: 8px;
-  flex-wrap: wrap;
-}
-
-.material-meta .year {
-  font-size: 12px;
-  color: #64748b;
-}
-
-.category {
-  font-size: 11px;
-  padding: 3px 10px;
-  border-radius: 12px;
-  font-weight: 500;
-}
-
-.category.syllabus {
-  background: #e0f2fe;
-  color: #0284c7;
-}
-
-.category.module {
-  background: #dcfce7;
-  color: #166534;
-}
-
-.category.obtlp {
-  background: #fef3c7;
-  color: #d97706;
-}
-
-.category.ppt {
-  background: #fce7f3;
-  color: #db2777;
-}
-
-.material-card-footer {
-  padding-top: 12px;
-  border-top: 1px solid #f0f2f5;
-}
-
-.download-btn-mobile {
-  width: 100%;
-  background: linear-gradient(135deg, #166534, #14532d);
-  color: white;
-  border: none;
-  padding: 10px;
-  border-radius: 12px;
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  transition: all 0.2s ease;
-  font-family: 'Inter', sans-serif;
-}
-
-.download-btn-mobile:hover {
-  background: linear-gradient(135deg, #14532d, #0f3d24);
-}
-
-/* Empty State */
-.empty-state {
-  text-align: center;
-  padding: 60px 20px;
-  color: #64748b;
-}
-
-.empty-icon {
-  font-size: 64px;
-  color: #cbd5e1;
-  margin-bottom: 16px;
-}
-
-.empty-state h3 {
-  font-size: 18px;
-  color: #334155;
-  margin-bottom: 8px;
-}
-
-.empty-state p {
-  font-size: 14px;
-}
-
-/* Responsive Design */
+/* ── MID-RANGE & RESPONSIVE VIEWPORT BREAKPOINTS ── */
 @media (max-width: 1200px) {
-  .materials-header {
+  .acad-res-sticky-header {
     left: 240px;
-    padding: 16px 24px;
+    width: calc(100% - 240px);
   }
-  
-  .materials-content {
+  .acad-res-tabs-bar,
+  .acad-res-content-area {
     margin-left: 240px;
-    padding: 24px;
-  }
-  
-  .materials-card {
-    padding: 24px;
+    width: calc(100% - 240px);
   }
 }
 
 @media (max-width: 992px) {
-  .materials-header {
+  .acad-res-sticky-header {
     left: 0;
     width: 100%;
-    padding: 16px 20px;
   }
-  
-  .materials-content {
+  .acad-res-tabs-bar {
     margin-left: 0;
-    margin-top: 100px;
-    padding: 20px;
+    margin-top: 120px;
+    padding: 0 20px;
+  }
+  .acad-res-content-area {
+    margin-left: 0;
+    width: 100%;
+    padding: 16px 20px;
   }
 }
 
 @media (max-width: 768px) {
-  .materials-header {
-    text-align: center;
-  }
-  
-  .materials-header h2 {
-    font-size: 24px;
-  }
-  
-  .materials-header p {
-    font-size: 12px;
-  }
-  
-  .materials-content {
-    margin-top: 110px;
-    padding: 16px;
-  }
-  
-  .materials-card {
-    padding: 16px;
-  }
-  
-  .filters-section {
+  .acad-res-toolbar {
     flex-direction: column;
+    align-items: stretch;
   }
-  
-  .filter-group {
-    flex-direction: column;
+  .acad-res-menu-anchor {
     width: 100%;
-  }
-  
-  .custom-dropdown {
-    width: 100%;
-    min-width: unset;
-  }
-  
-  .dropdown-btn {
-    width: 100%;
-    justify-content: space-between;
-  }
-  
-  /* Fix dropdown positioning on mobile */
-  .dropdown-menu {
-    position: fixed;
-    top: auto;
-    left: 16px;
-    right: 16px;
-    bottom: auto;
-    max-height: 300px;
-    z-index: 9999;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-  }
-  
-  /* When dropdown is open, adjust for better UX */
-  .custom-dropdown {
-    position: static;
-  }
-  
-  .clear-filters-btn {
-    width: 100%;
-    justify-content: center;
-  }
-  
-  .desktop-table {
-    display: none;
-  }
-  
-  .mobile-grid {
-    display: flex;
-  }
-  
-  .results-count {
-    font-size: 12px;
-  }
-}
-
-@media (max-width: 480px) {
-  .materials-header {
-    padding: 12px;
-  }
-  
-  .materials-header h2 {
-    font-size: 22px;
-  }
-  
-  .materials-content {
-    margin-top: 100px;
-    padding: 12px;
-  }
-  
-  .materials-card {
-    padding: 12px;
-  }
-  
-  .search-input {
-    font-size: 13px;
-  }
-  
-  .material-card {
-    padding: 12px;
-  }
-  
-  .material-icon {
-    width: 40px;
-    height: 40px;
-    font-size: 18px;
-  }
-  
-  .material-header-info h4 {
-    font-size: 14px;
-  }
-  
-  .dropdown-menu {
-    left: 12px;
-    right: 12px;
   }
 }
