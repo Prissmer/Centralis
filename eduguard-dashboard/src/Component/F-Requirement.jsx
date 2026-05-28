@@ -1,100 +1,194 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { supabase } from '../lib/supabase'; // Ensure this path is correct
+import { useAuth } from '../Context/AuthContext'; // Bring in your auth context
 import { 
-  FaCheckCircle, 
-  FaTimes, 
-  FaCloudUploadAlt,
-  FaBell,
-  FaUserCircle,
-  FaRegFileAlt,
-  FaRegFilePdf,
-  FaRegFileWord,
-  FaRegFilePowerpoint,
-  FaClock,
-  FaCalendarAlt,
-  FaClipboardList
+  FaCheckCircle, FaTimes, FaCloudUploadAlt, FaBell, FaUserCircle,
+  FaRegFileAlt, FaRegFilePdf, FaRegFileWord, FaRegFilePowerpoint,
+  FaClock, FaCalendarAlt, FaClipboardList
 } from "react-icons/fa";
 import './Style/F-Requirement.css';
 
 const RequirementsPage = () => {
+  const { user } = useAuth(); // Get the currently logged-in user
   const [activeTab, setActiveTab] = useState('Material');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
+  const [uploadFile, setUploadFile] = useState(null); // Track the real file
+  const [isUploading, setIsUploading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   const tabs = ['Material', 'Assessment', 'Teacher document'];
 
-  // Requirements data organized by category
+  // Map database categories to UI tab names
+  const categoryMap = {
+    'materials': 'Material',
+    'assessment': 'Assessment',
+    'teacher_documents': 'Teacher document'
+  };
+
+  // State to hold the live data from Supabase
   const [itemsByTab, setItemsByTab] = useState({
-    'Material': {
-      completed: [
-        { id: 1, name: 'Course Outline', type: 'PDF', size: '2.4 MB', dueDate: 'Jan 15, 2026', submittedDate: 'Jan 10, 2026', version: 'v2' }
-      ],
-      pending: [
-        { id: 2, name: 'OBTLP', type: 'Word', size: '1.2 MB', dueDate: 'Jan 30, 2026', description: 'Outcome-Based Teaching and Learning Plan' },
-        { id: 3, name: 'PowerPoint Presentation', type: 'PPT', size: '5.8 MB', dueDate: 'Feb 5, 2026', description: 'Week 1-3 Lecture Materials' }
-      ]
-    },
-    'Assessment': {
-      completed: [
-        { id: 4, name: 'Quiz 1 Blueprint', type: 'PDF', size: '0.8 MB', dueDate: 'Jan 20, 2026', submittedDate: 'Jan 18, 2026', version: 'v1' }
-      ],
-      pending: [
-        { id: 5, name: 'Final Exam', type: 'PDF', size: '3.2 MB', dueDate: 'Feb 28, 2026', description: 'Comprehensive Final Examination' },
-        { id: 6, name: 'Midterm Assessment', type: 'Word', size: '1.5 MB', dueDate: 'Feb 15, 2026', description: 'Midterm Evaluation Materials' }
-      ]
-    },
-    'Teacher document': {
-      completed: [
-        { id: 7, name: 'Syllabus Approval', type: 'PDF', size: '1.1 MB', dueDate: 'Jan 10, 2026', submittedDate: 'Jan 8, 2026', version: 'v3' }
-      ],
-      pending: [
-        { id: 8, name: 'Teaching Load Form', type: 'Excel', size: '0.5 MB', dueDate: 'Feb 10, 2026', description: 'Faculty Teaching Assignment' }
-      ]
-    }
+    'Material': { completed: [], pending: [] },
+    'Assessment': { completed: [], pending: [] },
+    'Teacher document': { completed: [], pending: [] }
   });
 
-  const handleOpenModal = (item, category) => {
-    setSelectedItem({ ...item, category });
+  // ==========================================
+  // 1. FETCH LIVE DATA FROM SUPABASE
+  // ==========================================
+  const fetchData = async () => {
+    if (!user) return;
+    setIsLoading(true);
+
+    try {
+      // 1. Get all active requirements from the checklist
+      const { data: reqs, error: reqError } = await supabase
+        .from('requirements')
+        .select('*')
+        .eq('active', true);
+      
+      if (reqError) throw reqError;
+
+      // 2. Get all submissions specifically for THIS user
+      const { data: subs, error: subError } = await supabase
+        .from('submissions')
+        .select('*')
+        .eq('uploaded_by', user.id);
+
+      if (subError) throw subError;
+
+      // 3. Process and sort the data into the Tabs
+      const newData = {
+        'Material': { completed: [], pending: [] },
+        'Assessment': { completed: [], pending: [] },
+        'Teacher document': { completed: [], pending: [] }
+      };
+
+      reqs.forEach((req) => {
+        const tabName = categoryMap[req.category];
+        if (!tabName) return; // Skip if category is unrecognized
+
+        // Check if the user has a submission for this specific requirement
+        const submission = subs.find(s => s.requirement_id === req.requirement_id);
+
+        // Format the item for the UI
+        const itemFormat = {
+          id: req.requirement_id,
+          name: req.requirement_name,
+          category: req.category, // Keep the raw DB category for uploading later
+          type: submission ? submission.file_type : 'PDF', // Extracted from file
+          size: submission ? `${(submission.file_size / 1024 / 1024).toFixed(2)} MB` : '--',
+          dueDate: 'TBA', // Add to your DB later if needed
+          submittedDate: submission ? new Date(submission.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : null,
+          version: 'v1',
+          description: `Requires Admin Approval: ${req.needs_approval ? 'Yes' : 'No'}`
+        };
+
+        if (submission) {
+          newData[tabName].completed.push({ ...itemFormat, status: 'Complete' });
+        } else {
+          newData[tabName].pending.push(itemFormat);
+        }
+      });
+
+      setItemsByTab(newData);
+    } catch (error) {
+      console.error("Error fetching data:", error.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Run the fetch when the component loads or the user changes
+  useEffect(() => {
+    fetchData();
+  }, [user]);
+
+  // ==========================================
+  // 2. HANDLE REAL UPLOADS TO BACKEND
+  // ==========================================
+  const handleRealSubmit = async (e) => {
+    e.preventDefault();
+    if (!selectedItem || !uploadFile) return alert("Please select a file to upload.");
+    
+    setIsUploading(true);
+
+    try {
+      const form = new FormData();
+      form.append("file", uploadFile);
+      form.append("userId", user.id);
+      form.append("requirement_id", selectedItem.id);
+      form.append("category", selectedItem.category); // Connects to your backend routing rules!
+      
+      // Provide defaults needed by your backend routing
+      form.append("school_year", "2025-2026"); 
+      form.append("semester", "1st Semester");
+      form.append("document_type", selectedItem.name);
+
+      const res = await fetch("http://localhost:5000/upload-material", {
+        method: "POST",
+        body: form
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || "Upload failed");
+      }
+
+      // ==========================================
+      // NEW: Log Activity to Supabase Audit Logs
+      // ==========================================
+      const { error: auditError } = await supabase
+        .from('audit_logs')
+        .insert([
+          {
+            user_id: user.id,
+            action: 'File Upload',
+            target_table: 'requirements',
+            target_id: selectedItem.id,
+            description: `Uploaded file: ${uploadFile.name} for ${selectedItem.name}`
+          }
+        ]);
+
+      if (auditError) {
+        console.error("Failed to save audit log:", auditError.message);
+        // temporarily add this alert so it pops up on your screen:
+        alert("AUDIT LOG ERROR: " + auditError.message); 
+      }
+      // ==========================================
+
+      // Success! Refetch data to instantly move it from Pending to Completed
+      await fetchData(); 
+      handleCloseModal();
+    } catch (err) {
+      console.error("Upload error:", err.message);
+      alert("Failed to upload: " + err.message);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  // ==========================================
+  // UI HANDLERS
+  // ==========================================
+  const handleOpenModal = (item) => {
+    setSelectedItem(item);
+    setUploadFile(null); // Clear previous file
     setIsModalOpen(true);
   };
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setSelectedItem(null);
-  };
-
-  const handleFakeSubmit = (e) => {
-    e.preventDefault();
-    if (!selectedItem) return;
-
-    const currentData = { ...itemsByTab[activeTab] };
-    const pendingItems = currentData.pending.filter(
-      item => item.id !== selectedItem.id
-    );
-    const completedItem = { 
-      ...selectedItem, 
-      status: 'Complete',
-      submittedDate: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-      version: 'v1'
-    };
-    
-    currentData.completed = [...currentData.completed, completedItem];
-    currentData.pending = pendingItems;
-
-    setItemsByTab({
-      ...itemsByTab,
-      [activeTab]: currentData
-    });
-
-    handleCloseModal();
+    setUploadFile(null);
   };
 
   const getFileIcon = (type) => {
-    switch(type?.toLowerCase()) {
-      case 'pdf': return <FaRegFilePdf />;
-      case 'word': return <FaRegFileWord />;
-      case 'ppt': return <FaRegFilePowerpoint />;
-      default: return <FaRegFileAlt />;
-    }
+    const fileType = String(type).toLowerCase();
+    if (fileType.includes('pdf')) return <FaRegFilePdf />;
+    if (fileType.includes('word') || fileType.includes('doc')) return <FaRegFileWord />;
+    if (fileType.includes('powerpoint') || fileType.includes('ppt') || fileType.includes('presentation')) return <FaRegFilePowerpoint />;
+    return <FaRegFileAlt />;
   };
 
   const getStats = () => {
@@ -121,34 +215,27 @@ const RequirementsPage = () => {
           <h1>Requirement</h1>
           <p className="freq-breadcrumb">Track and manage your academic requirements</p>
         </div>
-        
       </header>
 
       <div className="freq-panel-container">
         {/* Stats Overview */}
         <div className="freq-stats-grid">
           <div className="freq-stat-card">
-            <div className="freq-stat-icon freq-total">
-              <FaClipboardList />
-            </div>
+            <div className="freq-stat-icon freq-total"><FaClipboardList /></div>
             <div className="freq-stat-info">
               <h3>{stats.total}</h3>
               <p>Total Requirements</p>
             </div>
           </div>
           <div className="freq-stat-card">
-            <div className="freq-stat-icon freq-completed-stat">
-              <FaCheckCircle />
-            </div>
+            <div className="freq-stat-icon freq-completed-stat"><FaCheckCircle /></div>
             <div className="freq-stat-info">
               <h3>{stats.completed}</h3>
               <p>Completed</p>
             </div>
           </div>
           <div className="freq-stat-card">
-            <div className="freq-stat-icon freq-pending-stat">
-              <FaClock />
-            </div>
+            <div className="freq-stat-icon freq-pending-stat"><FaClock /></div>
             <div className="freq-stat-info">
               <h3>{stats.pending}</h3>
               <p>Pending</p>
@@ -172,141 +259,142 @@ const RequirementsPage = () => {
           ))}
         </div>
 
-        {/* Requirements Content - Split by Status */}
+        {/* Requirements Content */}
         <div className="freq-panel-content">
-          
-          {/* Pending Requirements Section */}
-          {itemsByTab[activeTab].pending.length > 0 && (
-            <div className="freq-category-section">
-              <div className="freq-category-header">
-                <div className="freq-category-title">
-                  <span className="freq-category-dot freq-dot-pending"></span>
-                  <h3>Pending Requirements</h3>
-                </div>
-                <span className="freq-category-count">{itemsByTab[activeTab].pending.length} items</span>
-              </div>
-              
-              <div className="freq-item-list">
-                {itemsByTab[activeTab].pending.map((item) => (
-                  <div key={item.id} className="freq-row-item">
-                    <div className="freq-item-icon">
-                      {getFileIcon(item.type)}
+          {isLoading ? (
+            <div style={{ padding: '40px', textAlign: 'center', color: '#64748b' }}>
+              Loading your requirements...
+            </div>
+          ) : (
+            <>
+              {/* Pending Requirements Section */}
+              {itemsByTab[activeTab].pending.length > 0 && (
+                <div className="freq-category-section">
+                  <div className="freq-category-header">
+                    <div className="freq-category-title">
+                      <span className="freq-category-dot freq-dot-pending"></span>
+                      <h3>Pending Requirements</h3>
                     </div>
-                    <div className="freq-item-details">
-                      <div className="freq-item-name">{item.name}</div>
-                      <div className="freq-item-meta">
-                        {item.type && <span className="freq-meta-badge">{item.type}</span>}
-                        {item.size && <span className="freq-meta-text">{item.size}</span>}
-                        {item.dueDate && (
-                          <span className="freq-meta-text freq-due-date">
-                            <FaCalendarAlt /> Due: {item.dueDate}
-                          </span>
-                        )}
-                      </div>
-                      {item.description && (
-                        <div className="freq-item-description">{item.description}</div>
-                      )}
-                    </div>
-                    <div className="freq-item-action">
-                      <button 
-                        className="freq-upload-btn"
-                        onClick={() => handleOpenModal(item, 'pending')}
-                      >
-                        <FaCloudUploadAlt />
-                        Upload
-                      </button>
-                    </div>
+                    <span className="freq-category-count">{itemsByTab[activeTab].pending.length} items</span>
                   </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Completed Requirements Section */}
-          {itemsByTab[activeTab].completed.length > 0 && (
-            <div className="freq-category-section">
-              <div className="freq-category-header">
-                <div className="freq-category-title">
-                  <span className="freq-category-dot freq-dot-completed"></span>
-                  <h3>Completed Requirements</h3>
-                </div>
-                <span className="freq-category-count">{itemsByTab[activeTab].completed.length} items</span>
-              </div>
-              
-              <div className="freq-item-list">
-                {itemsByTab[activeTab].completed.map((item) => (
-                  <div key={item.id} className="freq-row-item">
-                    <div className="freq-item-icon freq-completed-icon">
-                      {getFileIcon(item.type)}
-                    </div>
-                    <div className="freq-item-details">
-                      <div className="freq-item-name">
-                        {item.name}
-                        {item.version && <span className="freq-version-badge">{item.version}</span>}
+                  
+                  <div className="freq-item-list">
+                    {itemsByTab[activeTab].pending.map((item) => (
+                      <div key={item.id} className="freq-row-item">
+                        <div className="freq-item-icon">{getFileIcon(item.type)}</div>
+                        <div className="freq-item-details">
+                          <div className="freq-item-name">{item.name}</div>
+                          <div className="freq-item-meta">
+                            {item.description && <span className="freq-meta-text">{item.description}</span>}
+                          </div>
+                        </div>
+                        <div className="freq-item-action">
+                          <button 
+                            className="freq-upload-btn"
+                            onClick={() => handleOpenModal(item)}
+                          >
+                            <FaCloudUploadAlt /> Upload
+                          </button>
+                        </div>
                       </div>
-                      <div className="freq-item-meta">
-                        {item.type && <span className="freq-meta-badge">{item.type}</span>}
-                        {item.size && <span className="freq-meta-text">{item.size}</span>}
-                        {item.submittedDate && (
-                          <span className="freq-meta-text freq-submitted">
-                            <FaCheckCircle /> Submitted: {item.submittedDate}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    <div className="freq-item-action">
-                      <span className="freq-status-complete">
-                        <FaCheckCircle /> Complete
-                      </span>
-                    </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-            </div>
-          )}
+                </div>
+              )}
 
-          {/* Empty State */}
-          {itemsByTab[activeTab].pending.length === 0 && itemsByTab[activeTab].completed.length === 0 && (
-            <div className="freq-empty-state">
-              <div className="freq-empty-icon">📋</div>
-              <h3>No requirements found</h3>
-              <p>All requirements for this category have been completed</p>
-            </div>
+              {/* Completed Requirements Section */}
+              {itemsByTab[activeTab].completed.length > 0 && (
+                <div className="freq-category-section">
+                  <div className="freq-category-header">
+                    <div className="freq-category-title">
+                      <span className="freq-category-dot freq-dot-completed"></span>
+                      <h3>Completed Requirements</h3>
+                    </div>
+                    <span className="freq-category-count">{itemsByTab[activeTab].completed.length} items</span>
+                  </div>
+                  
+                  <div className="freq-item-list">
+                    {itemsByTab[activeTab].completed.map((item) => (
+                      <div key={item.id} className="freq-row-item">
+                        <div className="freq-item-icon freq-completed-icon">{getFileIcon(item.type)}</div>
+                        <div className="freq-item-details">
+                          <div className="freq-item-name">
+                            {item.name}
+                            {item.version && <span className="freq-version-badge">{item.version}</span>}
+                          </div>
+                          <div className="freq-item-meta">
+                            {item.type && <span className="freq-meta-badge">{item.type.split('/')[1] || item.type}</span>}
+                            {item.size && <span className="freq-meta-text">{item.size}</span>}
+                            {item.submittedDate && (
+                              <span className="freq-meta-text freq-submitted">
+                                <FaCheckCircle /> Submitted: {item.submittedDate}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <div className="freq-item-action">
+                          <span className="freq-status-complete">
+                            <FaCheckCircle /> Complete
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Empty State */}
+              {itemsByTab[activeTab].pending.length === 0 && itemsByTab[activeTab].completed.length === 0 && (
+                <div className="freq-empty-state">
+                  <div className="freq-empty-icon">📋</div>
+                  <h3>No requirements found</h3>
+                  <p>All requirements for this category have been completed</p>
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>
 
-      {/* Modal */}
+      {/* Upload Modal */}
       {isModalOpen && (
         <div className="freq-modal-overlay" onClick={handleCloseModal}>
           <div className="freq-modal-box" onClick={(e) => e.stopPropagation()}>
             <div className="freq-modal-header">
               <h3>Upload Document</h3>
-              <button className="freq-modal-close-btn" onClick={handleCloseModal}>
-                <FaTimes />
-              </button>
+              <button className="freq-modal-close-btn" onClick={handleCloseModal}><FaTimes /></button>
             </div>
             
-            <form onSubmit={handleFakeSubmit} className="freq-modal-body">
+            <form onSubmit={handleRealSubmit} className="freq-modal-body">
               <p className="freq-modal-target-info">
                 Uploading file for: <strong>{selectedItem?.name}</strong>
               </p>
 
               <div className="freq-file-dropzone">
                 <FaCloudUploadAlt className="freq-upload-icon" />
-                <input type="file" id="fileAttachment" required />
+                <input 
+                  type="file" 
+                  id="fileAttachment" 
+                  required 
+                  onChange={(e) => setUploadFile(e.target.files[0])} // 🔥 Capture the actual file!
+                />
                 <label htmlFor="fileAttachment">
                   <span>Click to browse</span> or drag your file here
                 </label>
-                <p className="freq-file-hint">Supported: PDF, DOC, DOCX, PPT, PPTX (Max 10MB)</p>
+                {uploadFile && (
+                  <p style={{ marginTop: '10px', color: '#2E7D32', fontWeight: 'bold' }}>
+                    Selected: {uploadFile.name}
+                  </p>
+                )}
+                <p className="freq-file-hint">Supported: PDF, DOC, DOCX, PPT, PPTX (Max 50MB)</p>
               </div>
 
               <div className="freq-modal-footer">
-                <button type="button" className="freq-btn-cancel" onClick={handleCloseModal}>
+                <button type="button" className="freq-btn-cancel" onClick={handleCloseModal} disabled={isUploading}>
                   Cancel
                 </button>
-                <button type="submit" className="freq-btn-submit">
-                  Submit File
+                <button type="submit" className="freq-btn-submit" disabled={isUploading}>
+                  {isUploading ? 'Uploading to Cloudinary...' : 'Submit File'}
                 </button>
               </div>
             </form>

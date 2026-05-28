@@ -1,5 +1,7 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import "./Style/A-AuditLog.css";
+import { useAuth } from "../Context/AuthContext";
+import { supabase } from '../lib/supabase'; // 🔥 ADDED THIS LINE
 import { 
   FaHistory, 
   FaFilter, 
@@ -10,13 +12,45 @@ import {
 } from 'react-icons/fa';
 
 const AuditLog = () => {
-  const logData = [
-    { id: 1, user: "Alice Johnson", action: "Material Approval", target: "Algorithms_Notes.pdf", ip: "192.168.1.45", time: "Oct 26, 2023 • 10:42 AM", status: "Success" },
-    { id: 2, user: "System", action: "Auto-Backup", target: "Database_Main", ip: "127.0.0.1", time: "Oct 26, 2023 • 04:00 AM", status: "Success" },
-    { id: 3, user: "Admin", action: "Role Update", target: "Dr. Robert Smith", ip: "192.168.1.12", time: "Oct 25, 2023 • 02:15 PM", status: "Success" },
-    { id: 4, user: "Unknown", action: "Failed Login", target: "Admin Portal", ip: "45.22.11.9", time: "Oct 25, 2023 • 10:38 AM", status: "Warning" },
-    { id: 5, user: "Prof. Emily Davis", action: "Settings Change", target: "Similarity Threshold", ip: "192.168.1.5", time: "Oct 24, 2023 • 09:05 AM", status: "Success" },
-  ];
+  const [logData, setLogData] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchAuditLogs();
+  }, []);
+
+  const fetchAuditLogs = async () => {
+    try {
+      setLoading(true);
+      // Fetching data from your public.audit_logs table
+      const { data, error } = await supabase
+        .from('audit_logs')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error("Error fetching audit logs:", error);
+      } else {
+        setLogData(data);
+      }
+    } catch (err) {
+      console.error("Unexpected error:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Helper function to format the Supabase timestamp
+  const formatDate = (dateString) => {
+    const options = { 
+      month: 'short', 
+      day: 'numeric', 
+      year: 'numeric', 
+      hour: '2-digit', 
+      minute: '2-digit' 
+    };
+    return new Date(dateString).toLocaleDateString('en-US', options).replace(',', ' •');
+  };
 
   return (
     <div className="audit-content">
@@ -58,44 +92,50 @@ const AuditLog = () => {
             <thead>
               <tr>
                 <th>TIMESTAMP</th>
-                <th>USER</th>
+                <th>USER ID</th>
                 <th>ACTION</th>
-                <th>TARGET</th>
-                <th>IP ADDRESS</th>
-                <th>STATUS</th>
+                <th>TARGET TABLE</th>
+                <th>DESCRIPTION</th>
+                {/* Removed IP and STATUS as they are not in your DB schema yet */}
               </tr>
             </thead>
             <tbody>
-              {logData.map((log) => (
-                <tr key={log.id}>
-                  <td className="time-cell">{log.time}</td>
-                  <td className="user-cell"><strong>{log.user}</strong></td>
-                  <td>
-                    <span className={`action-tag ${log.action.toLowerCase().replace(" ", "-")}`}>
-                      {log.action}
-                    </span>
-                  </td>
-                  <td className="target-cell">{log.target}</td>
-                  <td className="ip-cell">{log.ip}</td>
-                  <td>
-                    <span className={`status-dot ${log.status.toLowerCase()}`}>
-                      {log.status}
-                    </span>
-                  </td>
+              {loading ? (
+                <tr>
+                  <td colSpan="5" style={{ textAlign: 'center', padding: '20px' }}>Loading logs...</td>
                 </tr>
-              ))}
+              ) : logData.length === 0 ? (
+                <tr>
+                  <td colSpan="5" style={{ textAlign: 'center', padding: '20px' }}>No audit logs found.</td>
+                </tr>
+              ) : (
+                logData.map((log) => (
+                  <tr key={log.log_id}>
+                    <td className="time-cell">{formatDate(log.created_at)}</td>
+                    {/* Displaying UUID directly. You may want to fetch user profiles later to show names */}
+                    <td className="user-cell" title={log.user_id}>
+                      <strong>{log.user_id ? log.user_id.substring(0, 8) + '...' : 'System'}</strong>
+                    </td>
+                    <td>
+                      <span className={`action-tag ${log.action ? log.action.toLowerCase().replace(" ", "-") : 'default'}`}>
+                        {log.action}
+                      </span>
+                    </td>
+                    <td className="target-cell">{log.target_table} (ID: {log.target_id})</td>
+                    <td className="description-cell">{log.description}</td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
 
         {/* Footer Pagination */}
         <div className="audit-footer">
-          <p>Showing 1 to 5 of 1,240 events</p>
+          <p>Showing {logData.length} events</p>
           <div className="pagination">
             <button className="page-btn"><FaChevronLeft /></button>
             <button className="page-btn active">1</button>
-            <button className="page-btn">2</button>
-            <button className="page-btn">3</button>
             <button className="page-btn"><FaChevronRight /></button>
           </div>
         </div>

@@ -454,3 +454,38 @@
     flex-direction: column;
   }
 }
+/* ==================================================
+🔥 LIVE WEBHOOK SLIDE-IN ANIMATION
+================================================== 
+*/
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.98);
+    background-color: #ffedd5; /* Brief amber flash to draw the eye */
+    box-shadow: 0 10px 25px rgba(245, 158, 11, 0.2);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    background-color: transparent;
+    box-shadow: none;
+  }
+}
+
+.slide-in-anim {
+  animation: slideIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  z-index: 10;
+  position: relative;
+}
+
+/* Ensure the unread dot pulses for brand new notifications */
+@keyframes pulse {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.5); opacity: 0.5; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.slide-in-anim .unread-dot {
+  animation: pulse 2s infinite;
+}

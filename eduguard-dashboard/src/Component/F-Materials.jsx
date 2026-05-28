@@ -49,6 +49,34 @@ const Materials = () => {
     fetchMaterials();
   }, [page, searchTerm, subjectFilter, dateFilter, activeTab]);
 
+
+  // Force actual local asset saving using temporary programmatic links
+  const handleDownload = async (e, fileUrl, fileName) => {
+    e.preventDefault(); 
+    if (!fileUrl) return;
+
+    try {
+      const response = await fetch(fileUrl);
+      const blob = await response.blob();
+      const localUrl = window.URL.createObjectURL(blob);
+      
+      const link = document.createElement('a');
+      link.href = localUrl;
+      link.setAttribute('download', fileName || 'academic-file.pdf');
+      document.body.appendChild(link);
+      link.click();
+      
+      // Memory cleanup sequence
+      link.remove();
+      window.URL.revokeObjectURL(localUrl);
+    } catch (error) {
+      console.error("Download blocked or failed:", error);
+      // Fallback: If strict CORS rules reject the fetch block, open safely in new window tab
+      window.open(fileUrl, '_blank');
+    }
+  };
+
+
   return (
     <div className="acad-res-viewport-container">
       <div className="acad-res-layout-shell">
@@ -149,11 +177,36 @@ const Materials = () => {
                         <td style={{ color: '#475569', fontWeight: '500' }}>Instructor</td>
                         <td>{new Date(item.created_at).toLocaleDateString()}</td>
                         <td>
-                          <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
-                            <a href={item.file_url} target="_blank" rel="noreferrer" style={{ textDecoration: 'none', color: '#166534', fontWeight: '600', fontSize: '14px', alignSelf: 'center', paddingRight: '8px' }}>View</a>
-                            <a href={item.file_url} download target="_blank" rel="noreferrer" className="acad-res-btn-download" style={{ padding: '8px 12px' }}>
-                              <FaDownload />
+
+                          <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', alignItems: 'center' }}>
+                            {/* VIEW ROUTE FIX: Target direct file URL object without hardcoded backend host path overrides */}
+                            <a 
+                              href={item.file_url} 
+                              target="_blank" 
+                              rel="noreferrer" 
+                              style={{ textDecoration: 'none', color: '#166534', fontWeight: '600', fontSize: '14px', paddingRight: '8px' }}
+                            >
+                              View
                             </a>
+                            {/* DOWNLOAD ACTION FIX: Converted button logic to download absolute cloud items via programmatic download handler */}
+                            <button 
+  onClick={(e) => handleDownload(e, item.file_url, item.title || item.file_name)}
+  className="acad-res-btn-download" 
+  style={{ 
+    padding: '8px 12px', 
+    background: 'none', 
+    border: 'none', 
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    color: '#475569' // Gives the button a distinct dark slate/gray color
+  }}
+  title="Download File"
+>
+  <FaDownload style={{ fontSize: '16px', color: 'inherit' }} />
+</button>
+
                           </div>
                         </td>
                       </tr>
