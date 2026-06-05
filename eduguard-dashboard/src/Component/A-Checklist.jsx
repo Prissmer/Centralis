@@ -112,7 +112,7 @@ const AChecklist = () => {
       currentColumns.forEach(c => {
         // 🔥 THE FIX: We must use uploaded_by to match your Supabase database schema!
         const sub = submissions.find(
-          s => s.uploaded_by === t.id && s.requirement_id === c.requirement_id 
+          s => String(s.uploaded_by) === String(t.id) && String(s.requirement_id) === String(c.requirement_id) 
         );
         map[t.id][c.requirement_id] = sub || null;
       });

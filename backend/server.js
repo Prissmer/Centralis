@@ -19,7 +19,7 @@ app.use(express.json());
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: { 
-    origin: "https://centralis-dashboard.onrender.com", // Make sure this matches your React port!
+    origin: "*", 
     methods: ["GET", "POST", "PUT", "DELETE"] 
   } 
 });
@@ -467,8 +467,7 @@ app.get("/api/compliance-checklist", async (req, res) => {
 
     let query = supabase
       .from("submissions")
-      .select("*")
-      .eq("archived", false); 
+      .select("*"); 
 
     if (semester) query = query.eq("semester", semester);
     if (school_year) query = query.eq("school_year", school_year);
