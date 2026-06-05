@@ -58,23 +58,9 @@ const Materials = () => {
     }
   };
 
-<<<<<<< HEAD
-  // Re-fetch when dependencies change (including activeTab)
-  useEffect(() => {
-    fetchMaterials();
-  }, [page, searchTerm, subjectFilter, dateFilter, activeTab]);
-
-
-  // Force actual local asset saving using temporary programmatic links
-  const handleDownload = async (e, fileUrl, fileName) => {
-    e.preventDefault(); 
-    if (!fileUrl) return;
-
-=======
   // ── FETCH MY UPLOADS ──
   const fetchMyUploads = async () => {
     if (!user) return;
->>>>>>> 880bba0e18acbab83b33bcc54183af8cde4cdff3
     try {
       setLoading(true);
       const { data, error } = await supabase
@@ -141,8 +127,6 @@ const Materials = () => {
     }
   };
 
-<<<<<<< HEAD
-=======
   // ── VIEW MODAL ──
   const openViewModal = (item) => {
     setViewItem(item);
@@ -185,7 +169,6 @@ const Materials = () => {
     approved: myUploads.filter(u => u.approval_status === 'approved').length,
     pending: myUploads.filter(u => u.approval_status === 'pending').length,
   };
->>>>>>> 880bba0e18acbab83b33bcc54183af8cde4cdff3
 
   return (
     <div className="acad-res-viewport-container">
@@ -243,73 +226,6 @@ const Materials = () => {
         <div className="acad-res-content-area">
           <div className="acad-res-main-card">
 
-<<<<<<< HEAD
-            {/* RESPONSIVE SCROLL WINDOW CARD */}
-            <div className="acad-res-table-scroller">
-              <table className="acad-res-data-table">
-                <thead>
-                  <tr>
-                    <th>FILE DETAILS</th>
-                    <th>SUBJECT</th>
-                    <th>UPLOADED BY</th>
-                    <th>UPLOAD DATE</th>
-                    <th style={{ textAlign: 'right' }}>ACTIONS</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {loading ? (
-                    <tr><td colSpan="5" style={{ textAlign: 'center', padding: '40px 0' }}>Loading data...</td></tr>
-                  ) : materials.length === 0 ? (
-                    <tr><td colSpan="5" style={{ textAlign: 'center', padding: '40px 0' }}>No {activeTab} found.</td></tr>
-                  ) : (
-                    materials.map((item, index) => (
-                      <tr key={item.submission_id || item.id || index}>
-                        <td>
-                          <div className="acad-res-file-cell">
-                            <div style={{ background: '#fef2f2', color: '#ef4444', padding: '8px', borderRadius: '8px', display: 'flex' }}><FaFilePdf /></div>
-                            <div>
-                              <p style={{ margin: 0, fontWeight: '600', color: '#1e293b' }}>{item.title || item.file_name}</p>
-                              <p style={{ margin: '2px 0 0 0', fontSize: '12px', color: '#64748b' }}>{item.document_type}</p>
-                            </div>
-                          </div>
-                        </td>
-                        <td><span className="acad-res-subject-tag">{item.subject || "N/A"}</span></td>
-                        <td style={{ color: '#475569', fontWeight: '500' }}>Instructor</td>
-                        <td>{new Date(item.created_at).toLocaleDateString()}</td>
-                        <td>
-
-                          <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', alignItems: 'center' }}>
-                            {/* VIEW ROUTE FIX: Target direct file URL object without hardcoded backend host path overrides */}
-                            <a 
-                              href={item.file_url} 
-                              target="_blank" 
-                              rel="noreferrer" 
-                              style={{ textDecoration: 'none', color: '#166534', fontWeight: '600', fontSize: '14px', paddingRight: '8px' }}
-                            >
-                              View
-                            </a>
-                            {/* DOWNLOAD ACTION FIX: Converted button logic to download absolute cloud items via programmatic download handler */}
-                            <button 
-  onClick={(e) => handleDownload(e, item.file_url, item.title || item.file_name)}
-  className="acad-res-btn-download" 
-  style={{ 
-    padding: '8px 12px', 
-    background: 'none', 
-    border: 'none', 
-    cursor: 'pointer',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    color: '#475569' // Gives the button a distinct dark slate/gray color
-  }}
-  title="Download File"
->
-  <FaDownload style={{ fontSize: '16px', color: 'inherit' }} />
-</button>
-
-                          </div>
-                        </td>
-=======
             {/* ═══ BROWSE VIEW ═══ */}
             {activeView === "browse" && (
               <>
@@ -342,7 +258,6 @@ const Materials = () => {
                         <th>UPLOADED BY</th>
                         <th>UPLOAD DATE</th>
                         <th style={{ textAlign: 'right' }}>ACTIONS</th>
->>>>>>> 880bba0e18acbab83b33bcc54183af8cde4cdff3
                       </tr>
                     </thead>
                     <tbody>
