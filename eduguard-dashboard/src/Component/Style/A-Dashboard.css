@@ -2,11 +2,9 @@
 
 /* Main Container Setup */
 .dashboard-content {
-    margin-left: 280px;
     padding: 20px 30px 30px 30px;
     background-color: #f8fafb;
     min-height: 100vh;
-    width: calc(100% - 280px);
     box-sizing: border-box;
     display: flex;
     flex-direction: column;

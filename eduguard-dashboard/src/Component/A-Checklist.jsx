@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { 
   FaSearch, FaDownload, FaPrint, FaCheckCircle, 
-  FaTimesCircle, FaClock, FaExclamationTriangle, FaLock, FaEye 
+  FaTimesCircle, FaClock, FaExclamationTriangle, FaLock, FaEye,
+  FaChevronLeft, FaChevronRight 
 } from "react-icons/fa";
 import { useAuth } from "../Context/AuthContext";
 import "./Style/A-Checklist.css";
@@ -35,6 +36,17 @@ const AChecklist = () => {
   const [reviewRemarks, setReviewRemarks] = useState("");
   const [actionLoading, setActionLoading] = useState(false);
 
+  // Assign Modal state
+  const [showAssignModal, setShowAssignModal] = useState(false);
+  const [assignReq, setAssignReq] = useState(null);
+  const [assignRoles, setAssignRoles] = useState([]);
+  const [assignUsers, setAssignUsers] = useState([]);
+  const [assignSaving, setAssignSaving] = useState(false);
+
+  // Pagination state
+  const [checklistPage, setChecklistPage] = useState(1);
+  const checklistLimit = 10;
+
   // --- GET RELEVANT BACKEND AGGREGATIONS ---
   const fetchChecklistData = async () => {
     try {
@@ -59,6 +71,33 @@ const AChecklist = () => {
   useEffect(() => {
     fetchChecklistData();
   }, [semester, schoolYear]);
+
+  const openAssignModal = (req, e) => {
+    e.stopPropagation();
+    setAssignReq(req);
+    setAssignRoles(req.assigned_roles || ['instructor', 'lead_instructor']);
+    setAssignUsers(req.assigned_users || []);
+    setShowAssignModal(true);
+  };
+
+  const saveAssignments = async () => {
+    try {
+      setAssignSaving(true);
+      const res = await fetch(`http://localhost:5000/requirements/${assignReq.requirement_id}/assign`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ assigned_roles: assignRoles, assigned_users: assignUsers })
+      });
+      if(res.ok) {
+        setShowAssignModal(false);
+        fetchChecklistData();
+      }
+    } catch(err) {
+      console.error(err);
+    } finally {
+      setAssignSaving(false);
+    }
+  };
 
   // --- COMPUTE ACTIVE REQUIREMENTS FILTER ---
   const currentColumns = useMemo(() => {
@@ -93,11 +132,9 @@ const AChecklist = () => {
 
     switch (sub.approval_status) {
       case "approved":
-        return <span className="status-cell approved"><FaCheckCircle /> Approved</span>;
+        return <span className="status-cell approved"><FaCheckCircle /> Acknowledged</span>;
       case "pending":
-        return <span className="status-cell pending"><FaClock /> Pending</span>;
-      case "rejected":
-        return <span className="status-cell rejected"><FaExclamationTriangle /> Rejected</span>;
+        return <span className="status-cell pending"><FaClock /> Review</span>;
       default:
         return <span className="status-cell missing"><FaTimesCircle /> Missing</span>;
     }
@@ -147,17 +184,12 @@ const AChecklist = () => {
 
   // --- POST ACTION COMPLIANCE EVALUATION ---
  const handleReviewAction = async (statusValue) => {
-    if (statusValue === "rejected" && !reviewRemarks.trim()) {
-      return alert("Please enter rejection remarks first.");
-    }
-
     try {
       setActionLoading(true);
       const res = await fetch("http://localhost:5000/api/submissions/review", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          // 🔥 THE FIX: Change .submission_id to .id here
           submission_id: selectedCell.sub.id, 
           status: statusValue,
           remarks: reviewRemarks,
@@ -166,7 +198,7 @@ const AChecklist = () => {
       });
 
       if (!res.ok) throw new Error("Could not update context state.");
-      alert(`Submission marked as ${statusValue}`);
+      alert(`Submission acknowledged successfully.`);
       setSelectedCell(null);
       fetchChecklistData(); 
     } catch (err) {
@@ -202,24 +234,31 @@ const AChecklist = () => {
   return (
     <div className="checklist-container">
       {/* Structural Headers */}
-      <div className="checklist-header">
-        <div>
-          <h2>Academic Compliance Framework Checklist</h2>
-          <p>Real-time auditing of faculty submission tasks.</p>
+      <header className="responsive-header">
+        <div className="header-left">
+          <h2 style={{
+            fontSize: '28px', fontWeight: 700,
+            background: 'linear-gradient(135deg, #166534, #14532d)',
+            WebkitBackgroundClip: 'text', backgroundClip: 'text',
+            color: 'transparent', margin: 0
+          }}>Compliance Checklist</h2>
+          <p style={{ fontSize: '13px', color: '#64748b', marginTop: '4px' }}>Real-time auditing of faculty submission tasks.</p>
         </div>
-        <div className="header-actions">
-          <select value={schoolYear} onChange={(e) => setSchoolYear(e.target.value)} className="period-select">
+        <div className="header-actions" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <select value={schoolYear} onChange={(e) => setSchoolYear(e.target.value)} className="period-select" style={{ padding: '8px 12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
             <option value="2025-2026">2025-2026</option>
             <option value="2026-2027">2026-2027</option>
           </select>
-          <select value={semester} onChange={(e) => setSemester(e.target.value)} className="period-select">
+          <select value={semester} onChange={(e) => setSemester(e.target.value)} className="period-select" style={{ padding: '8px 12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
             <option value="1st Semester">1st Semester</option>
             <option value="2nd Semester">2nd Semester</option>
           </select>
-          <button className="btn-secondary" onClick={exportCSV}><FaDownload /> CSV</button>
-          <button className="btn-secondary" onClick={() => window.print()}><FaPrint /> Print</button>
+          <button className="btn-secondary" onClick={exportCSV} style={{ padding: '8px 16px', borderRadius: '8px', border: '1px solid #e2e8f0', background: 'white', display: 'flex', alignItems: 'center', gap: '6px' }}><FaDownload /> CSV</button>
+          <button className="btn-secondary" onClick={() => window.print()} style={{ padding: '8px 16px', borderRadius: '8px', border: '1px solid #e2e8f0', background: 'white', display: 'flex', alignItems: 'center', gap: '6px' }}><FaPrint /> Print</button>
         </div>
-      </div>
+      </header>
+
+      <div style={{ marginTop: '90px' }}>
 
       {/* Database Categories Tabs */}
       <div className="checklist-tabs">
@@ -258,10 +297,15 @@ const AChecklist = () => {
         <table className="checklist-table">
           <thead>
             <tr>
-              <th>Faculty Profile Header</th>
-              <th>Progress Rate</th>
+              <th style={{ width: '250px' }}>Faculty Member</th>
+              <th style={{ width: '120px', textAlign: 'center' }}>Progress</th>
               {currentColumns.map(col => (
-                <th key={col.requirement_id}>{col.requirement_name}</th>
+                <th key={col.requirement_id}>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px' }}>
+                    <span>{col.requirement_name}</span>
+                    <button className="btn-secondary" style={{ padding: '2px 6px', fontSize: '10px' }} onClick={(e) => openAssignModal(col, e)}>Assign</button>
+                  </div>
+                </th>
               ))}
             </tr>
           </thead>
@@ -273,11 +317,20 @@ const AChecklist = () => {
                  </td>
                </tr>
             ) : (
-               filteredTeachers.map(teacher => {
-                const approvedItemsCount = currentColumns.filter(c => {
+               (() => {
+                 const startIdx = (checklistPage - 1) * checklistLimit;
+                 const paginatedTeachers = filteredTeachers.slice(startIdx, startIdx + checklistLimit);
+                 return paginatedTeachers.map(teacher => {
+                 const assignedColumns = currentColumns.filter(c => {
+                   const isRoleAssigned = !c.assigned_roles || c.assigned_roles.length === 0 || c.assigned_roles.includes(teacher.role);
+                   const isUserAssigned = c.assigned_users && c.assigned_users.includes(teacher.id);
+                   return isRoleAssigned || isUserAssigned;
+                 });
+
+                 const approvedItemsCount = assignedColumns.filter(c => {
                   const s = matrix[teacher.id]?.[c.requirement_id];
                   return s && (s.approval_status === "approved" || (!c.needs_approval && s.submission_status === "submitted"));
-                }).length;
+                 }).length;
 
                 return (
                   <tr key={teacher.id}>
@@ -286,15 +339,23 @@ const AChecklist = () => {
                       <span>{teacher.specialization || "General Core"} • {(teacher.employment_status || "N/A").toUpperCase()}</span>
                     </td>
                     <td>
-                      <span className="progress-badge">{approvedItemsCount} / {currentColumns.length}</span>
+                      <span className="progress-badge">{approvedItemsCount} / {assignedColumns.length}</span>
                     </td>
                      {currentColumns.map(req => {
+                      const isRoleAssigned = !req.assigned_roles || req.assigned_roles.length === 0 || req.assigned_roles.includes(teacher.role);
+                      const isUserAssigned = req.assigned_users && req.assigned_users.includes(teacher.id);
+                      const isAssigned = isRoleAssigned || isUserAssigned;
+
                       const sub = matrix[teacher.id]?.[req.requirement_id];
+
+                      if (!isAssigned) {
+                        return <td key={req.requirement_id} style={{ backgroundColor: '#f8fafc', color: '#94a3b8', textAlign: 'center', fontSize: '12px' }}>Not Assigned</td>;
+                      }
+
                       return (
                         <td
                           key={req.requirement_id}
                           className="interactive-status-cell"
-                          style={{ cursor: sub ? 'pointer' : 'default' }}
                           onClick={() => handleCellClick(teacher, req)}
                         >
                           {renderStatus(sub, req.needs_approval)}
@@ -303,47 +364,75 @@ const AChecklist = () => {
                     })}
                   </tr>
                 );
-              })
+              });
+              })()
             )}
           </tbody>
         </table>
       </div>
 
-      {/* Overlay Drawer Sheet Code Block */}
+      {/* Pagination */}
+      {filteredTeachers.length > checklistLimit && (
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 24px', background: 'white', borderRadius: '0 0 16px 16px', borderTop: '1px solid #f0f2f5' }}>
+          <span style={{ fontSize: '13px', color: '#64748b' }}>Showing {Math.min(checklistLimit, filteredTeachers.length - (checklistPage - 1) * checklistLimit)} of {filteredTeachers.length} faculty</span>
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            <button onClick={() => setChecklistPage(p => Math.max(1, p - 1))} disabled={checklistPage <= 1}
+              style={{ padding: '6px 12px', border: '1px solid #e2e8f0', borderRadius: '8px', background: checklistPage <= 1 ? '#f1f5f9' : 'white', cursor: checklistPage <= 1 ? 'not-allowed' : 'pointer', fontSize: '13px' }}>
+              <FaChevronLeft />
+            </button>
+            <span style={{ fontSize: '13px', color: '#475569', padding: '0 8px' }}>Page {checklistPage} of {Math.ceil(filteredTeachers.length / checklistLimit)}</span>
+            <button onClick={() => setChecklistPage(p => Math.min(Math.ceil(filteredTeachers.length / checklistLimit), p + 1))} disabled={checklistPage >= Math.ceil(filteredTeachers.length / checklistLimit)}
+              style={{ padding: '6px 12px', border: '1px solid #e2e8f0', borderRadius: '8px', background: checklistPage >= Math.ceil(filteredTeachers.length / checklistLimit) ? '#f1f5f9' : 'white', cursor: checklistPage >= Math.ceil(filteredTeachers.length / checklistLimit) ? 'not-allowed' : 'pointer', fontSize: '13px' }}>
+              <FaChevronRight />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Overlay */}
       {selectedCell && (
         <div className="review-side-panel-overlay" onClick={() => setSelectedCell(null)}>
-          <div className="review-side-panel" onClick={(e) => e.stopPropagation()} style={{ width: '600px', maxWidth: '90vw' }}> {/* Made slightly wider for reading */}
-            <h3>Document Approval Review Hub</h3>
-            <hr />
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px' }}>
-              <div>
-                <p><strong>Faculty:</strong> {selectedCell.teacher.first_name} {selectedCell.teacher.last_name}</p>
-                <p><strong>Requirement Target:</strong> {selectedCell.req.requirement_name}</p>
+          <div className="review-side-panel" onClick={(e) => e.stopPropagation()}>
+            <div className="review-panel-header">
+              <h3>Document Review</h3>
+              <button className="review-panel-close-icon" onClick={() => setSelectedCell(null)}><FaTimesCircle /></button>
+            </div>
+            
+            <div className="review-meta-card">
+              <div className="meta-col">
+                <span className="meta-label">Faculty</span>
+                <span className="meta-value">{selectedCell.teacher.first_name} {selectedCell.teacher.last_name}</span>
               </div>
-              <div style={{ textAlign: 'right' }}>
-                <p><strong>Status:</strong> <span style={{textTransform: 'uppercase', fontWeight: 'bold'}}>
-                  {selectedCell.sub
-                    ? (selectedCell.sub.approval_status || selectedCell.sub.submission_status)
-                    : 'MISSING'}
-                </span></p>
-                {selectedCell.sub && (
-                  <p><strong>Date:</strong> {new Date(selectedCell.sub.created_at).toLocaleDateString()}</p>
-                )}
+              <div className="meta-col">
+                <span className="meta-label">Requirement Target</span>
+                <span className="meta-value">{selectedCell.req.requirement_name}</span>
               </div>
+              {selectedCell.req.needs_approval && (
+                <div className="meta-col" style={{ textAlign: 'right' }}>
+                  <span className="meta-label">Status</span>
+                  <span className={`meta-status-badge ${selectedCell.sub ? (selectedCell.sub.approval_status || selectedCell.sub.submission_status) : 'missing'}`}>
+                    {selectedCell.sub ? 
+                      ((selectedCell.sub.approval_status || selectedCell.sub.submission_status).toUpperCase() === 'APPROVED' 
+                        ? 'ACKNOWLEDGED' 
+                        : (selectedCell.sub.approval_status || selectedCell.sub.submission_status).toUpperCase()
+                      ) : 'MISSING'}
+                  </span>
+                </div>
+              )}
             </div>
             
            {/* DOCUMENT VIEWER or NO-SUBMISSION STATE */}
             {!selectedCell.sub ? (
               // No submission yet — show placeholder
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '400px', backgroundColor: '#f9f9f9', borderRadius: '8px', border: '1px dashed #ccc', marginBottom: '20px', color: '#999', textAlign: 'center', padding: '20px' }}>
-                <FaTimesCircle style={{ fontSize: '48px', marginBottom: '12px', color: '#ddd' }} />
-                <h3 style={{ margin: '0 0 8px 0', color: '#aaa' }}>No Submission Found</h3>
-                <p style={{ margin: 0, fontSize: '14px' }}>This faculty member has not submitted this requirement yet.</p>
+              <div className="review-empty-state">
+                <FaExclamationTriangle className="empty-state-icon" />
+                <h4>No Submission Found</h4>
+                <p>This faculty member has not submitted this requirement yet.</p>
               </div>
             ) : (
               <>
-                {/* DOCUMENT VIEWER — Image: direct render | PDF: direct iframe | Word/Excel: MS Office Online */}
-                <div className="document-viewer-box" style={{ width: '100%', height: '400px', backgroundColor: '#f0f0f0', borderRadius: '8px', overflow: 'hidden', border: '1px solid #ddd', marginBottom: '20px' }}>
+                {/* DOCUMENT VIEWER */}
+                <div className="document-viewer-box">
                   
                   {selectedCell.sub.file_type && selectedCell.sub.file_type.includes("image") ? (
                     // 1. IMAGE — render directly
@@ -396,43 +485,82 @@ const AChecklist = () => {
                   } 
                   target="_blank" 
                   rel="noreferrer" 
-                  className="btn-primary-link" 
-                  style={{display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '10px 15px', background: '#2E7D32', color: 'white', textDecoration: 'none', borderRadius: '8px', marginBottom: '15px', width: '100%', justifyContent: 'center'}}
+                  className="btn-primary-link review-fullscreen-btn" 
                 >
                   <FaEye /> View Document Full Screen
                 </a>
               </>
             )}
 
-
             {/* Actions Display — only shown when sub exists and is pending */}
             {selectedCell.sub && selectedCell.req.needs_approval && selectedCell.sub.approval_status === "pending" && (
               <div className="approval-form-container">
-                <label style={{display: 'block', marginBottom: '8px', fontWeight: 'bold'}}>Rejection Reason Details (Required if executing rejection parameters)</label>
-                <textarea 
-                  value={reviewRemarks} 
-                  onChange={(e) => setReviewRemarks(e.target.value)} 
-                  placeholder="Type feedback reasons here..." 
-                  style={{width: '100%', minHeight: '80px', padding: '10px', borderRadius: '8px', border: '1px solid #ccc', marginBottom: '15px'}}
-                />
-                <div className="split-action-row" style={{display: 'flex', gap: '10px'}}>
-                  <button className="btn-approve" style={{flex: 1, padding: '12px', background: '#2E7D32', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold'}} disabled={actionLoading} onClick={() => handleReviewAction("approved")}>Approve Submission</button>
-                  <button className="btn-reject" style={{flex: 1, padding: '12px', background: '#d32f2f', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold'}} disabled={actionLoading} onClick={() => handleReviewAction("rejected")}>Reject Submission</button>
-                </div>
+                <button className="btn-approve" disabled={actionLoading} onClick={() => handleReviewAction("approved")}>
+                  Acknowledge Submission
+                </button>
               </div>
             )}
-
-            {selectedCell.sub?.approval_status === "rejected" && (
-              <div className="remarks-history-box" style={{marginTop: '20px', padding: '15px', background: '#feebee', borderRadius: '8px', borderLeft: '4px solid #d32f2f'}}>
-                <h4 style={{margin: '0 0 10px 0'}}>Historical Evaluation Remarks:</h4>
-                <p style={{margin: 0}}>{selectedCell.sub.remarks || "No remark evaluation values specified."}</p>
-              </div>
-            )}
-
-            <button className="close-panel-btn" style={{marginTop: '20px', width: '100%', padding: '12px', background: '#f5f5f5', border: '1px solid #ddd', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold'}} onClick={() => setSelectedCell(null)}>Dismiss Evaluation Sheet</button>
           </div>
         </div>
       )}
+
+      {/* ASSIGN REQUIREMENT MODAL */}
+      {showAssignModal && assignReq && (
+        <div className="modal-overlay">
+          <div className="modal-box" style={{ maxWidth: '500px' }}>
+            <h3 style={{ marginBottom: '15px' }}>Assign "{assignReq.requirement_name}"</h3>
+            
+            <div style={{ marginBottom: '20px' }}>
+              <h4 style={{ fontSize: '14px', color: '#64748b', marginBottom: '10px' }}>Assign by Role</h4>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                <input 
+                  type="checkbox" 
+                  checked={assignRoles.includes("instructor")}
+                  onChange={(e) => {
+                    setAssignRoles(prev => e.target.checked ? [...prev, "instructor"] : prev.filter(r => r !== "instructor"));
+                  }} 
+                />
+                Instructor
+              </label>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <input 
+                  type="checkbox" 
+                  checked={assignRoles.includes("lead_instructor")}
+                  onChange={(e) => {
+                    setAssignRoles(prev => e.target.checked ? [...prev, "lead_instructor"] : prev.filter(r => r !== "lead_instructor"));
+                  }} 
+                />
+                Lead Instructor
+              </label>
+            </div>
+
+            <div style={{ marginBottom: '20px' }}>
+              <h4 style={{ fontSize: '14px', color: '#64748b', marginBottom: '10px' }}>Assign to Specific Users</h4>
+              <div style={{ maxHeight: '200px', overflowY: 'auto', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '10px' }}>
+                {teachers.map(t => (
+                  <label key={t.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', padding: '4px' }}>
+                    <input 
+                      type="checkbox" 
+                      checked={assignUsers.includes(t.id) || assignRoles.includes(t.role)}
+                      disabled={assignRoles.includes(t.role)}
+                      onChange={(e) => {
+                        setAssignUsers(prev => e.target.checked ? [...prev, t.id] : prev.filter(id => id !== t.id));
+                      }} 
+                    />
+                    {t.first_name} {t.last_name} <span style={{ fontSize: '12px', color: '#94a3b8' }}>({t.role === 'lead_instructor' ? 'Lead' : 'Instructor'})</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <div className="modal-actions" style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+              <button className="btn-secondary" onClick={() => setShowAssignModal(false)} disabled={assignSaving}>Cancel</button>
+              <button className="btn-primary" onClick={saveAssignments} disabled={assignSaving}>{assignSaving ? "Saving..." : "Save Assignments"}</button>
+            </div>
+          </div>
+        </div>
+      )}
+      </div>
     </div>
   );
 };

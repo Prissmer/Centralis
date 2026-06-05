@@ -26,7 +26,7 @@ function App() {
     return <AdminApp />;
   }
 
-  if (role === "instructor" || role === "faculty") {
+  if (["instructor", "lead_instructor", "faculty"].includes(role)) {
     return <FacultyApp />;
   }
 

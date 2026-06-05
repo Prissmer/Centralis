@@ -21,19 +21,41 @@ const RoleAndPermission = () => {
   return (
     <div className="roles-content">
       {/* Header Bar */}
-      <header className="roles-header">
-        <h2>Roles & Permissions</h2>
-        <div className="header-right">
-          <div className="search-box">
-            <FaSearch className="icon" />
-            <input type="text" placeholder="Search anything..." />
+      {/* Header Bar */}
+      <header className="responsive-header">
+        <div className="header-left">
+          <h2 style={{
+            fontSize: '28px', fontWeight: 700,
+            background: 'linear-gradient(135deg, #166534, #14532d)',
+            WebkitBackgroundClip: 'text', backgroundClip: 'text',
+            color: 'transparent', margin: 0
+          }}>Roles & Permissions</h2>
+          <p style={{ fontSize: '13px', color: '#64748b', marginTop: '4px' }}>Configure system access matrices</p>
+        </div>
+        <div className="header-right" style={{ display: 'flex', alignItems: 'center' }}>
+          <div style={{
+            display: 'flex', alignItems: 'center', background: 'white',
+            border: '1px solid #e2e8f0', borderRadius: '12px', padding: '8px 16px',
+            minWidth: '320px', transition: 'all 0.2s ease'
+          }}>
+            <FaSearch style={{ color: '#94a3b8', fontSize: '16px' }} />
+            <input 
+              type="text" 
+              placeholder="Search anything..." 
+              style={{
+                border: 'none', outline: 'none', background: 'transparent',
+                marginLeft: '10px', fontSize: '14px', width: '100%'
+              }}
+            />
           </div>
-          <button className="notif-btn">
+          <button className="notif-btn" style={{ marginLeft: '15px' }}>
             <FaBell />
             <span className="dot"></span>
           </button>
         </div>
       </header>
+
+      <div style={{ marginTop: '90px' }}>
 
       {/* Role Cards */}
       <div className="role-cards-grid">
@@ -101,6 +123,7 @@ const RoleAndPermission = () => {
         <div className="matrix-footer">
           <button className="save-btn">Save Changes</button>
         </div>
+      </div>
       </div>
     </div>
   );

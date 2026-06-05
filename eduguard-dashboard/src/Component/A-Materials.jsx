@@ -38,7 +38,7 @@ const Materials = () => {
       setLoading(true);
       const queryParams = new URLSearchParams({
         page,
-        limit: 8,
+        limit: 10,
         search: searchTerm,
         subject: subjectFilter,
         date: dateFilter,
@@ -102,19 +102,28 @@ const Materials = () => {
   return (
     <div className="materials-content">
       {/* HEADER */}
-      <header className="materials-header">
-        <div>
-          <h2>Academic Resources</h2>
-          <p>Manage and monitor uploaded faculty {activeTab === "materials" ? "materials" : "assessments"}</p>
+      <header className="responsive-header">
+        <div className="header-left">
+          <h2 style={{
+            fontSize: '28px', fontWeight: 700,
+            background: 'linear-gradient(135deg, #166534, #14532d)',
+            WebkitBackgroundClip: 'text', backgroundClip: 'text',
+            color: 'transparent', margin: 0
+          }}>Academic Resources</h2>
+          <p style={{ fontSize: '13px', color: '#64748b', marginTop: '4px' }}>Manage and monitor uploaded faculty {activeTab === "materials" ? "materials" : "assessments"}</p>
         </div>
-        <button className="btn-primary" onClick={() => {
-          // 🔥 Automatically sets the dropdown to match your current tab!
-          setUploadForm({ ...uploadForm, category: activeTab }); 
-          setIsModalOpen(true);
-        }}>
-          <FaPlus /> Upload File
-        </button>
+        <div className="header-right" style={{ display: 'flex', alignItems: 'center' }}>
+          <button className="btn-primary" onClick={() => {
+            // 🔥 Automatically sets the dropdown to match your current tab!
+            setUploadForm({ ...uploadForm, category: activeTab }); 
+            setIsModalOpen(true);
+          }} style={{ padding: '8px 16px', borderRadius: '8px', background: '#166534', color: 'white', display: 'flex', alignItems: 'center', gap: '6px', border: 'none', cursor: 'pointer', fontWeight: 600 }}>
+            <FaPlus /> Upload File
+          </button>
+        </div>
       </header>
+
+      <div style={{ marginTop: '90px' }}>
 
       {/* TABS NAVIGATION */}
       <div className="materials-tabs">
@@ -194,7 +203,7 @@ const Materials = () => {
                     </div>
                   </td>
                   <td><span className="subject-badge">{item.subject || "N/A"}</span></td>
-                  <td className="m-author">Instructor</td>
+                  <td className="m-author">{item.uploader_name || 'Unknown'}</td>
                   <td>{new Date(item.created_at).toLocaleDateString()}</td>
                   <td>
                     <div className="action-links">
@@ -289,6 +298,7 @@ const Materials = () => {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 };

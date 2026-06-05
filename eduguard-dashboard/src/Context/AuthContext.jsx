@@ -8,12 +8,36 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const fetchFallbackRole = async (userObj) => {
+      try {
+        const { data, error } = await supabase
+          .from("profiles")
+          .select("role")
+          .eq("id", userObj.id)
+          .single();
+          
+        if (data && data.role) {
+          // Sync metadata so next time it's instant
+          await supabase.auth.updateUser({ data: { role: data.role } });
+          return data.role;
+        }
+      } catch (err) {
+        console.error("Failed to fetch fallback role:", err);
+      }
+      return null;
+    };
+
     // 1. Get initial session from local storage (Fast!)
     const initializeAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        // Extract role from metadata immediately
-        const userRole = session.user.user_metadata?.role;
+        let userRole = session.user.user_metadata?.role;
+        
+        if (!userRole) {
+          userRole = await fetchFallbackRole(session.user);
+        }
+        
+        console.log("User role:", userRole);
         setUser({ ...session.user, role: userRole });
       } else {
         setUser(null);
@@ -24,9 +48,15 @@ export const AuthProvider = ({ children }) => {
     initializeAuth();
 
     // 2. Listen for login/logout events
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (session) {
-        const userRole = session.user.user_metadata?.role;
+        let userRole = session.user.user_metadata?.role;
+        
+        if (!userRole) {
+          userRole = await fetchFallbackRole(session.user);
+        }
+        
+        console.log("User role:", userRole);
         setUser({ ...session.user, role: userRole });
       } else {
         setUser(null);

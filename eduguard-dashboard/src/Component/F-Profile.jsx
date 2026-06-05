@@ -117,7 +117,7 @@ const ProfilePage = () => {
               />
             </div>
             <h3 className="profile-user-name">{formData.firstName} {formData.lastName}</h3>
-            <p className="profile-user-role">{user?.role === 'instructor' ? 'Faculty Member' : 'Admin'}</p>
+            <p className="profile-user-role">{['instructor', 'lead_instructor'].includes(user?.role) ? 'Faculty Member' : 'Admin'}</p>
             
             <div className="profile-info-box">
               <div className="profile-info-item">

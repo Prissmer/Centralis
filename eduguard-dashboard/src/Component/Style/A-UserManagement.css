@@ -2,11 +2,9 @@
 
 /* MAIN WRAPPER */
 .user-management-content {
-    margin-left: 280px;
     padding: 30px;
     background-color: #f8fafb;
     min-height: 100vh;
-    width: calc(100% - 280px);
     box-sizing: border-box;
     font-family: 'Inter', sans-serif;
 }
