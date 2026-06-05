@@ -8,7 +8,7 @@ import AChecklist from "../Component/A-Checklist.jsx"; // ✅ Fixed Path
 import UserManagement from "../Component/A-UserManagement.jsx";
 import RoleAndPermission from "../Component/A-RoleandPermission.jsx";
 import Materials from "../Component/A-Materials.jsx";
-import AuditLog from "../Component/A-AuditLog.jsx";
+import LogHistory from "../Component/A-LogHistory.jsx";
 import Settings from "../Component/A-Settings.jsx";
 import Requirement from "../Component/A-Requirement.jsx"
 
@@ -21,7 +21,7 @@ function App() {
     <Sidebar />
 
     {/* MAIN CONTENT */}
-    <main className="ml-[280px] h-screen overflow-y-auto overflow-x-hidden">
+    <main className="max-[992px]:ml-0 ml-[280px] h-screen overflow-y-auto overflow-x-hidden">
       <div className="min-w-0 p-0">
         <Routes>
 
@@ -62,7 +62,7 @@ function App() {
 
           <Route
             path="/audit-logs"
-            element={<AuditLog />}
+            element={<LogHistory />}
           />
 
           <Route

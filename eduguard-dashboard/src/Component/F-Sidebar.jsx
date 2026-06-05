@@ -4,8 +4,8 @@ import { supabase } from "../lib/supabase.js";
 import { useAuth } from "../Context/AuthContext"; 
 import "./Style/F-Sidebar.css";
 import {
-  FaGraduationCap, FaHome, FaBook, FaUpload, FaFolderOpen, 
-  FaDownload, FaFileAlt, FaBell, FaUser, FaSignOutAlt, 
+  FaGraduationCap, FaHome, FaBook, 
+  FaDownload, FaBell, FaUser, FaSignOutAlt, 
   FaBars, FaArrowLeft, FaCheckCircle
 } from "react-icons/fa";
 
@@ -22,6 +22,25 @@ const Sidebar = () => {
     initials: "??",
     dept: "Faculty Member"
   });
+
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  // Live unread notification counter
+  useEffect(() => {
+    const updateUnread = () => {
+      try {
+        const saved = localStorage.getItem("faculty_notifications_v2");
+        if (saved) {
+          const notifs = JSON.parse(saved);
+          const unread = notifs.filter(n => !n.isRead).length;
+          setUnreadCount(unread);
+        }
+      } catch (e) {}
+    };
+    updateUnread();
+    const interval = setInterval(updateUnread, 1000); // Check every second
+    return () => clearInterval(interval);
+  }, []);
 
   // Fetch Profile Data for the User Card
   useEffect(() => {
@@ -108,16 +127,20 @@ const Sidebar = () => {
             <ul className="menu">
               <li className={getLinkClass("/Dashboard")}><Link to="/Dashboard"><FaHome /> <span>Dashboard</span></Link></li>
               <li className={getLinkClass("/materials")}><Link to="/materials"><FaBook /> <span>Materials</span></Link></li>
-              <li className={getLinkClass("/upload")}><Link to="/upload"><FaUpload /> <span>Upload Materials</span></Link></li>
-              <li className={getLinkClass("/my-uploads")}><Link to="/my-uploads"><FaFolderOpen /> <span>My Uploads</span></Link></li>
               <li className={getLinkClass("/my-downloads")}><Link to="/my-downloads"><FaDownload /> <span>My Downloads</span></Link></li>
               <li className={getLinkClass("/requirement")}><Link to="/requirement"><FaCheckCircle /> <span>Requirement</span></Link></li>
-              <li className={getLinkClass("/templates")}><Link to="/templates"><FaFileAlt /> <span>Templates</span></Link></li>
             </ul>
 
             <p className="section-title">SYSTEM</p>
             <ul className="menu">
-              <li className={getLinkClass("/notifications")}><Link to="/notifications"><FaBell /> <span>Notifications</span></Link></li>
+              <li className={getLinkClass("/notifications")}>
+                <Link to="/notifications" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <FaBell /> <span>Notifications</span>
+                  </div>
+                  {unreadCount > 0 && <span style={{ background: '#dc2626', color: 'white', padding: '2px 8px', borderRadius: '12px', fontSize: '11px', fontWeight: 'bold' }}>{unreadCount}</span>}
+                </Link>
+              </li>
               <li className={getLinkClass("/profile")}><Link to="/profile"><FaUser /> <span>Profile</span></Link></li>
             </ul>
           </div>

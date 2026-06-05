@@ -115,7 +115,7 @@ const Sidebar = () => {
             <ul className="menu">
               <li>
                 <NavLink to="/audit-logs" className={({ isActive }) => isActive ? "active" : ""}>
-                  <FaHistory /> <span>Audit Logs</span>
+                  <FaHistory /> <span>Log History</span>
                 </NavLink>
               </li>
               <li>

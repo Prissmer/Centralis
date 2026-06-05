@@ -15,6 +15,8 @@ const UserManagement = () => {
   const [showModal, setShowModal] = useState(false);
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("All Roles");
+  const [page, setPage] = useState(1);
+  const itemsPerPage = 10;
 
   // ✅ FETCH USERS
   const fetchUsers = async () => {
@@ -85,24 +87,42 @@ const UserManagement = () => {
     <div className="user-management-content">
 
       {/* TOP NAVIGATION HEADER */}
-      <header className="global-header">
-        <h2>User Management</h2>
-        <div className="header-right">
-          <div className="global-search">
-            <FaSearch className="search-icon" />
+      <header className="responsive-header">
+        <div className="header-left">
+          <h2 style={{
+            fontSize: '28px', fontWeight: 700,
+            background: 'linear-gradient(135deg, #166534, #14532d)',
+            WebkitBackgroundClip: 'text', backgroundClip: 'text',
+            color: 'transparent', margin: 0
+          }}>User Management</h2>
+          <p style={{ fontSize: '13px', color: '#64748b', marginTop: '4px' }}>Manage system access and roles</p>
+        </div>
+        <div className="header-right" style={{ display: 'flex', alignItems: 'center' }}>
+          <div style={{
+            display: 'flex', alignItems: 'center', background: 'white',
+            border: '1px solid #e2e8f0', borderRadius: '12px', padding: '8px 16px',
+            minWidth: '320px', transition: 'all 0.2s ease'
+          }}>
+            <FaSearch style={{ color: '#94a3b8', fontSize: '16px' }} />
             <input 
               type="text" 
               placeholder="Search anything..." 
               value={search}
               onChange={(e) => setSearch(e.target.value)}
+              style={{
+                border: 'none', outline: 'none', background: 'transparent',
+                marginLeft: '10px', fontSize: '14px', width: '100%'
+              }}
             />
           </div>
-          <div className="notification-bell">
+          <div className="notification-bell" style={{ marginLeft: '15px' }}>
             <FaBell />
             <span className="badge"></span>
           </div>
         </div>
       </header>
+
+      <div style={{ marginTop: '90px' }}>
 
       <div className="table-container-card">
 
@@ -127,8 +147,7 @@ const UserManagement = () => {
               <option value="All Roles">All Roles</option>
               <option value="admin">Admin</option>
               <option value="instructor">Instructor</option>
-              <option value="student">Student</option>
-              <option value="faculty">Faculty</option>
+              <option value="lead_instructor">Lead Instructor</option>
             </select>
 
             <button 
@@ -153,7 +172,7 @@ const UserManagement = () => {
           </thead>
 
           <tbody>
-            {filteredUsers.map((user) => {
+            {filteredUsers.slice((page - 1) * itemsPerPage, page * itemsPerPage).map((user) => {
               const displayName = user.display_name || user.email?.split('@')[0] || "Unknown User";
               const initial = displayName.charAt(0).toUpperCase();
 
@@ -170,8 +189,8 @@ const UserManagement = () => {
                   </td>
 
                   <td>
-                    <span className={"role-badge " + (user.role || "").toLowerCase()}>
-                      {user.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : "No Role"}
+                    <span className={"role-badge " + (user.role || "").toLowerCase().replace(' ', '_')}>
+                      {user.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1).replace('_', ' ') : "No Role"}
                     </span>
                   </td>
 
@@ -201,15 +220,16 @@ const UserManagement = () => {
           </tbody>
         </table>
 
-        {/* PAGINATION FOOTER */}
         <div className="pagination-container">
           <span className="entries-info">
-            Showing 1 to {filteredUsers.length} of {users.length} entries
+            Showing {Math.min((page - 1) * itemsPerPage + 1, filteredUsers.length)} to {Math.min(page * itemsPerPage, filteredUsers.length)} of {filteredUsers.length} entries
           </span>
           <div className="pagination-controls">
-            <button className="page-btn">Prev</button>
-            <button className="page-btn active">1</button>
-            <button className="page-btn">Next</button>
+            <button className="page-btn" disabled={page === 1} onClick={() => setPage(page - 1)}>Prev</button>
+            {Array.from({ length: Math.ceil(filteredUsers.length / itemsPerPage) }, (_, i) => (
+              <button key={i + 1} className={`page-btn ${page === i + 1 ? 'active' : ''}`} onClick={() => setPage(i + 1)}>{i + 1}</button>
+            ))}
+            <button className="page-btn" disabled={page >= Math.ceil(filteredUsers.length / itemsPerPage)} onClick={() => setPage(page + 1)}>Next</button>
           </div>
         </div>
 
@@ -237,9 +257,8 @@ const UserManagement = () => {
               onChange={(e) => setSelectedRole(e.target.value)}
             >
               <option value="instructor">Instructor</option>
+              <option value="lead_instructor">Lead Instructor</option>
               <option value="admin">Admin</option>
-              <option value="faculty">Faculty</option>
-              <option value="student">Student</option>
             </select>
 
             <div className="modal-actions">
@@ -250,6 +269,7 @@ const UserManagement = () => {
         </div>
       )}
 
+      </div>
     </div>
   );
 };
