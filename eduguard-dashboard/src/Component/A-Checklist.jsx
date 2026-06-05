@@ -11,7 +11,7 @@ import "./Style/A-Checklist.css";
 // Route through our backend proxy which re-serves with Content-Disposition: inline.
 const getInlinePdfUrl = (url) => {
   if (!url) return url;
-  return `http://localhost:5000/api/proxy-pdf?url=${encodeURIComponent(url)}`;
+  return `${import.meta.env.VITE_API_URL}/api/proxy-pdf?url=${encodeURIComponent(url)}`;
 };
 
 const AChecklist = () => {
@@ -52,7 +52,7 @@ const AChecklist = () => {
     try {
       setLoading(true);
       const res = await fetch(
-        `http://localhost:5000/api/compliance-checklist?semester=${semester}&school_year=${schoolYear}`
+        `${import.meta.env.VITE_API_URL}/api/compliance-checklist?semester=${semester}&school_year=${schoolYear}`
       );
       const data = await res.json();
       
@@ -83,7 +83,7 @@ const AChecklist = () => {
   const saveAssignments = async () => {
     try {
       setAssignSaving(true);
-      const res = await fetch(`http://localhost:5000/requirements/${assignReq.requirement_id}/assign`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/requirements/${assignReq.requirement_id}/assign`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ assigned_roles: assignRoles, assigned_users: assignUsers })
@@ -186,7 +186,7 @@ const AChecklist = () => {
  const handleReviewAction = async (statusValue) => {
     try {
       setActionLoading(true);
-      const res = await fetch("http://localhost:5000/api/submissions/review", {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/submissions/review`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

@@ -29,7 +29,7 @@ const LogHistory = () => {
         action: actionFilter
       });
 
-      const res = await fetch(`http://localhost:5000/api/log-history?${params}`);
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/log-history?${params}`);
       const data = await res.json();
 
       if (res.ok) {

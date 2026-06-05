@@ -34,7 +34,7 @@ const Upload = () => {
       if (!formData.school_year || !formData.semester) return;
       try {
         const res = await fetch(
-          `http://localhost:5000/api/compliance-checklist?semester=${formData.semester}&school_year=${formData.school_year}`
+          `${import.meta.env.VITE_API_URL}/api/compliance-checklist?semester=${formData.semester}&school_year=${formData.school_year}`
         );
         const data = await res.json();
         if (res.ok && data.requirements) {
@@ -94,7 +94,7 @@ const Upload = () => {
       form.append("file_type", selectedFile.type);
       form.append("file_size", selectedFile.size);
 
-      const res = await fetch("http://localhost:5000/upload-material", {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/upload-material`, {
         method: "POST",
         body: form
       });

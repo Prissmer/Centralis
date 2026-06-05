@@ -48,7 +48,7 @@ const Materials = () => {
         semester: semesterFilter
       });
 
-      const res = await fetch(`http://localhost:5000/api/materials?${queryParams}`);
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/materials?${queryParams}`);
       const data = await res.json();
 
       if (res.ok) {
@@ -99,7 +99,7 @@ const Materials = () => {
     try {
       // Track download in Supabase
       if (user) {
-        await fetch("http://localhost:5000/api/downloads", {
+        await fetch(`${import.meta.env.VITE_API_URL}/api/downloads`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -487,7 +487,7 @@ const Materials = () => {
                   <img src={viewItem.file_url} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                 ) : viewItem.file_type === "application/pdf" ? (
                   <iframe
-                    src={`http://localhost:5000/api/proxy-pdf?url=${encodeURIComponent(viewItem.file_url)}`}
+                    src={`${import.meta.env.VITE_API_URL}/api/proxy-pdf?url=${encodeURIComponent(viewItem.file_url)}`}
                     width="100%" height="100%" frameBorder="0" title="PDF Preview" />
                 ) : (
                   <iframe

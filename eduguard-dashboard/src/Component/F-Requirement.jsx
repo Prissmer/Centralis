@@ -247,7 +247,7 @@ const RequirementsPage = () => {
         form.append("semester", selectedSemester);
         form.append("subject", selectedSubject);
 
-        const res = await fetch("http://localhost:5000/api/submissions/replace-file", {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/submissions/replace-file`, {
           method: "PUT",
           body: form
         });
@@ -292,7 +292,7 @@ const RequirementsPage = () => {
       form.append("subject", selectedSubject);
       form.append("document_type", selectedItem.name);
 
-      const res = await fetch("http://localhost:5000/upload-material", {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/upload-material`, {
         method: "POST",
         body: form
       });
@@ -736,7 +736,7 @@ const RequirementsPage = () => {
                 {previewItem.type && previewItem.type.includes("image") ? (
                    <img src={previewItem.fileUrl} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                 ) : previewItem.type === "application/pdf" ? (
-                   <iframe src={`http://localhost:5000/api/proxy-pdf?url=${encodeURIComponent(previewItem.fileUrl)}`} width="100%" height="100%" frameBorder="0" title="PDF Preview"></iframe>
+                   <iframe src={`${import.meta.env.VITE_API_URL}/api/proxy-pdf?url=${encodeURIComponent(previewItem.fileUrl)}`} width="100%" height="100%" frameBorder="0" title="PDF Preview"></iframe>
                 ) : (
                    <iframe src={`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(previewItem.fileUrl)}`} width="100%" height="100%" frameBorder="0" title="Office Preview"></iframe>
                 )}
@@ -747,7 +747,7 @@ const RequirementsPage = () => {
                    Close Preview
                  </button>
                  <a 
-                   href={previewItem.type && previewItem.type.includes("image") ? previewItem.fileUrl : previewItem.type === "application/pdf" ? `http://localhost:5000/api/proxy-pdf?url=${encodeURIComponent(previewItem.fileUrl)}` : `https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent(previewItem.fileUrl)}`} 
+                   href={previewItem.type && previewItem.type.includes("image") ? previewItem.fileUrl : previewItem.type === "application/pdf" ? `${import.meta.env.VITE_API_URL}/api/proxy-pdf?url=${encodeURIComponent(previewItem.fileUrl)}` : `https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent(previewItem.fileUrl)}`} 
                    target="_blank" 
                    rel="noreferrer" 
                    className="freq-btn-submit" 

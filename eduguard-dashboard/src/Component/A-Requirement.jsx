@@ -42,7 +42,7 @@ const RequirementsPage = () => {
 
   const fetchTeachers = async () => {
     try {
-      const res = await fetch("http://localhost:5000/users");
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/users`);
       if (res.ok) {
         const data = await res.json();
         setTeachers(data.filter(u => u.role === "instructor" || u.role === "lead_instructor") || []);
@@ -54,7 +54,7 @@ const RequirementsPage = () => {
     setLoading(true);
     try {
       const res = await fetch(
-        `http://localhost:5000/requirements?page=${currentPage}&limit=${limit}&search=${searchTerm}&category=${activeTab}`
+        `${import.meta.env.VITE_API_URL}/requirements?page=${currentPage}&limit=${limit}&search=${searchTerm}&category=${activeTab}`
       );
       const result = await res.json();
       setRequirements(result.data || []);
@@ -81,7 +81,7 @@ const RequirementsPage = () => {
   // --- ACTIONS ---
   const handleAddRequirement = async () => {
     try {
-      const res = await fetch("http://localhost:5000/requirements", {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/requirements`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -107,7 +107,7 @@ const RequirementsPage = () => {
 
  const handleSaveBulkDeadlines = async () => {
     try {
-      const res = await fetch("http://localhost:5000/requirements/bulk-deadline", {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/requirements/bulk-deadline`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

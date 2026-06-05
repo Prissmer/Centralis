@@ -45,7 +45,7 @@ const Materials = () => {
         category: activeTab // 🔥 Sends the current tab to the backend
       });
       
-      const res = await fetch(`http://localhost:5000/api/materials?${queryParams}`);
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/materials?${queryParams}`);
       const data = await res.json();
       
       if (res.ok) {
@@ -80,7 +80,7 @@ const Materials = () => {
 
     try {
       setUploading(true);
-      const res = await fetch("http://localhost:5000/upload-material", {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/upload-material`, {
         method: "POST",
         body: formData,
       });

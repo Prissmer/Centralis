@@ -21,7 +21,7 @@ const UserManagement = () => {
   // ✅ FETCH USERS
   const fetchUsers = async () => {
     try {
-      const res = await fetch("http://localhost:5000/users");
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/users`);
       const data = await res.json();
       setUsers(data);
     } catch (err) {
@@ -36,7 +36,7 @@ const UserManagement = () => {
   // ✅ CREATE USER (REVISED FOR EMAIL INVITE)
   const createUser = async () => {
     try {
-      const res = await fetch("http://localhost:5000/create-user", {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/create-user`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -67,7 +67,7 @@ const UserManagement = () => {
   const deleteUser = async (id) => {
     if (!window.confirm("Are you sure you want to delete this user?")) return;
     try {
-      await fetch(`http://localhost:5000/users/${id}`, {
+      await fetch(`${import.meta.env.VITE_API_URL}/users/${id}`, {
         method: "DELETE",
       });
       fetchUsers();
