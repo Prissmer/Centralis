@@ -182,6 +182,11 @@ app.get("/api/materials", async (req, res) => {
     if (subject) query = query.ilike("subject", `%${subject}%`);
     if (date) query = query.gte("created_at", `${date}T00:00:00.000Z`).lte("created_at", `${date}T23:59:59.999Z`);
 
+    const year_level = req.query.year_level || "";
+    const semester_filter = req.query.semester || "";
+    if (year_level) query = query.eq("academic_year", year_level);
+    if (semester_filter) query = query.eq("semester", semester_filter);
+
     const { data, count, error } = await query.range(start, end);
     if (error) throw error;
 
@@ -282,6 +287,7 @@ app.post("/upload-material", upload.single("file"), async (req, res) => {
       uploaded_by: userId,
       subject: subject || null, 
       document_type: document_type,
+      academic_year: academic_year || null,
       school_year: school_year,
       semester: semester,
       file_type: file.mimetype,
@@ -528,7 +534,7 @@ app.post("/api/submissions/review", async (req, res) => {
 // ==========================================================================
 app.put("/api/submissions/replace-file", upload.single("file"), async (req, res) => {
   try {
-    const { submission_id, userId, category, school_year, semester } = req.body;
+    const { submission_id, userId, category, school_year, semester, academic_year, subject } = req.body;
     const file = req.file;
 
     if (!file) return res.status(400).json({ error: "No file uploaded" });
@@ -597,7 +603,10 @@ app.put("/api/submissions/replace-file", upload.single("file"), async (req, res)
         public_id: cloudData.public_id,
         file_type: file.mimetype,
         file_size: file.size,
-        approval_status: "pending"
+        approval_status: "pending",
+        academic_year: academic_year || null,
+        semester: semester || null,
+        subject: subject || null
       })
       .eq("id", submission_id);
 

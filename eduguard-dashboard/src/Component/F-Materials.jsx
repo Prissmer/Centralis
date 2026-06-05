@@ -19,6 +19,8 @@ const Materials = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [subjectFilter, setSubjectFilter] = useState("");
   const [dateFilter, setDateFilter] = useState("");
+  const [yearLevelFilter, setYearLevelFilter] = useState("");
+  const [semesterFilter, setSemesterFilter] = useState("");
 
   // === MY UPLOADS STATE ===
   const [myUploads, setMyUploads] = useState([]);
@@ -41,7 +43,9 @@ const Materials = () => {
         search: searchTerm,
         subject: subjectFilter,
         date: dateFilter,
-        category: activeTab
+        category: activeTab,
+        year_level: yearLevelFilter,
+        semester: semesterFilter
       });
 
       const res = await fetch(`http://localhost:5000/api/materials?${queryParams}`);
@@ -80,7 +84,7 @@ const Materials = () => {
 
   useEffect(() => {
     if (activeView === "browse") fetchMaterials();
-  }, [page, searchTerm, subjectFilter, dateFilter, activeTab, activeView]);
+  }, [page, searchTerm, subjectFilter, dateFilter, activeTab, activeView, yearLevelFilter, semesterFilter]);
 
   useEffect(() => {
     if (activeView === "my-uploads") fetchMyUploads();
@@ -237,6 +241,30 @@ const Materials = () => {
                   </div>
                   <div className="acad-res-menu-anchor" style={{ display: 'flex', gap: '16px', minWidth: 'auto', flex: '1' }}>
                     <div className="acad-res-search-box" style={{ flex: '1' }}>
+                      <select 
+                        value={yearLevelFilter} 
+                        onChange={(e) => { setYearLevelFilter(e.target.value); setPage(1); }}
+                        style={{ paddingLeft: '16px', border: 'none', background: 'transparent', outline: 'none', width: '100%', color: '#475569' }}
+                      >
+                        <option value="">All Year Levels</option>
+                        <option value="1st Year">1st Year</option>
+                        <option value="2nd Year">2nd Year</option>
+                        <option value="3rd Year">3rd Year</option>
+                        <option value="4th Year">4th Year</option>
+                      </select>
+                    </div>
+                    <div className="acad-res-search-box" style={{ flex: '1' }}>
+                      <select 
+                        value={semesterFilter} 
+                        onChange={(e) => { setSemesterFilter(e.target.value); setPage(1); }}
+                        style={{ paddingLeft: '16px', border: 'none', background: 'transparent', outline: 'none', width: '100%', color: '#475569' }}
+                      >
+                        <option value="">All Semesters</option>
+                        <option value="1st Semester">1st Semester</option>
+                        <option value="2nd Semester">2nd Semester</option>
+                      </select>
+                    </div>
+                    <div className="acad-res-search-box" style={{ flex: '1' }}>
                       <FaFilter style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
                       <input type="text" placeholder="Filter by Subject..." value={subjectFilter}
                         style={{ paddingLeft: '46px' }}
@@ -265,8 +293,18 @@ const Materials = () => {
                         <tr><td colSpan="5" style={{ textAlign: 'center', padding: '40px 0' }}>Loading data...</td></tr>
                       ) : materials.length === 0 ? (
                         <tr><td colSpan="5" style={{ textAlign: 'center', padding: '40px 0' }}>No {activeTab} found.</td></tr>
-                      ) : (
-                        materials.map((item, index) => (
+                      ) : (() => {
+                        const filteredMaterials = materials.filter(item => {
+                          const matchYear = !yearLevelFilter || item.year_level === yearLevelFilter || item.academic_year === yearLevelFilter || item.school_year === yearLevelFilter;
+                          const matchSemester = !semesterFilter || item.semester === semesterFilter;
+                          return matchYear && matchSemester;
+                        });
+
+                        if (filteredMaterials.length === 0) {
+                          return <tr><td colSpan="5" style={{ textAlign: 'center', padding: '40px 0' }}>No items match your selected filters.</td></tr>;
+                        }
+
+                        return filteredMaterials.map((item, index) => (
                           <tr key={item.submission_id || item.id || index}>
                             <td>
                               <div className="acad-res-file-cell">
@@ -293,8 +331,8 @@ const Materials = () => {
                               </div>
                             </td>
                           </tr>
-                        ))
-                      )}
+                        ));
+                      })()}
                     </tbody>
                   </table>
                 </div>

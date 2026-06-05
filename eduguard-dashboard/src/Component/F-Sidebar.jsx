@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { supabase } from "../lib/supabase.js"; 
-import { useAuth } from "../Context/AuthContext"; 
+import { supabase } from "../lib/supabase.js";
+import { useAuth } from "../Context/AuthContext";
 import "./Style/F-Sidebar.css";
 import {
-  FaGraduationCap, FaHome, FaBook, 
-  FaDownload, FaBell, FaUser, FaSignOutAlt, 
+  FaGraduationCap, FaHome, FaBook,
+  FaDownload, FaBell, FaUser, FaSignOutAlt,
   FaBars, FaArrowLeft, FaCheckCircle
 } from "react-icons/fa";
 
@@ -13,10 +13,10 @@ const Sidebar = () => {
   const { signOut } = useAuth(); // Now correctly receives the function
   const location = useLocation();
   const navigate = useNavigate();
-  
+
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 992);
-  
+
   const [userProfile, setUserProfile] = useState({
     displayName: "Loading...",
     initials: "??",
@@ -35,7 +35,7 @@ const Sidebar = () => {
           const unread = notifs.filter(n => !n.isRead).length;
           setUnreadCount(unread);
         }
-      } catch (e) {}
+      } catch (e) { }
     };
     updateUnread();
     const interval = setInterval(updateUnread, 1000); // Check every second
@@ -49,8 +49,8 @@ const Sidebar = () => {
       if (authError || !user) return;
 
       const { data, error } = await supabase
-        .from('profiles') 
-        .select('display_name, first_name, last_name, role') 
+        .from('profiles')
+        .select('display_name, first_name, last_name, role')
         .eq('id', user.id)
         .single();
 
@@ -61,7 +61,7 @@ const Sidebar = () => {
         setUserProfile({
           displayName: name,
           initials: initials,
-          dept: data.role || "Faculty Member" 
+          dept: data.role || "Faculty Member"
         });
       } else {
         setUserProfile(prev => ({ ...prev, displayName: user.email, initials: "U" }));
@@ -99,21 +99,21 @@ const Sidebar = () => {
 
   return (
     <>
-      <button 
-        className={`mobile-menu-btn ${isMobileOpen ? 'open' : ''}`} 
+      <button
+        className={`mobile-menu-btn ${isMobileOpen ? 'open' : ''}`}
         onClick={() => setIsMobileOpen(!isMobileOpen)}
       >
         {isMobileOpen ? <FaArrowLeft /> : <FaBars />}
       </button>
 
-      <div 
-        className={`sidebar-overlay ${isMobileOpen ? 'active' : ''}`} 
-        onClick={() => setIsMobileOpen(false)} 
+      <div
+        className={`sidebar-overlay ${isMobileOpen ? 'active' : ''}`}
+        onClick={() => setIsMobileOpen(false)}
       />
 
       <div className={`sidebar ${isMobileOpen ? 'mobile-open' : ''}`}>
         <div className="sidebar-content">
-          
+
           <div className="sidebar-header">
             <div className="logo-box"><FaGraduationCap /></div>
             <div>

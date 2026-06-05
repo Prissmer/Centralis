@@ -15,6 +15,9 @@ const RequirementsPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [uploadFile, setUploadFile] = useState(null); // Track the real file
+  const [selectedYearLevel, setSelectedYearLevel] = useState('');
+  const [selectedSemester, setSelectedSemester] = useState('');
+  const [selectedSubject, setSelectedSubject] = useState('');
   const [isUploading, setIsUploading] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [previewItem, setPreviewItem] = useState(null); // File preview modal
@@ -37,6 +40,103 @@ const RequirementsPage = () => {
     'Assessment': { completed: [], pending: [] },
     'Teacher document': { completed: [], pending: [] }
   });
+
+  const curriculum = {
+    "1st Year": {
+      "1st Semester": [
+        "CC111 - Introduction to Computing",
+        "CC112 - Computer Programming 1",
+        "LITE - Living in IT Era",
+        "GE101 - Understanding the Self",
+        "GE102 - Readings in Philippine History",
+        "FIL 101 - Kontekstwalisadong Komunikasyon sa Filipino",
+        "NSTP 1 - Reserved Officer Training Coprs",
+        "PathFit 1 - Movement Competency Training"
+      ],
+      "2nd Semester": [
+        "CC123 - Computer Programming 2",
+        "HCI121 - Introduction to Human Computer Interaction",
+        "GE103 - Mathematics in the Modern World",
+        "GE104 - The Contemporary World",
+        "FIL 102 - Filipino sa Iba't-ibang Disiplina",
+        "LocHist - Local History, Culture and Values",
+        "Euthenics - Personality Development",
+        "NSTP2 - Reserved Officer Training Coprs",
+        "PathFit 2 - Exercise-Based Fitness Activities"
+      ]
+    },
+    "2nd Year": {
+      "1st Semester": [
+        "CC214 - Data Structures & Algorithm",
+        "IM211 - Database Management Systems",
+        "ITElectv1 - Object-Oriented Programming",
+        "Net212 - Networking 1",
+        "GE105 - Art Appreciation",
+        "GE106 - Science, Technology & Society",
+        "MS121 - Discrete Mathematics",
+        "GenSoc - Gender and Society",
+        "PathFit 3 - Choice of Dance, Sports..."
+      ],
+      "2nd Semester": [
+        "CC225 - Information Management",
+        "CC226 - Advanced Database Management System",
+        "IPT222 - Integrative Programming and Technologies",
+        "IT Electv2 - Platform Technologies",
+        "Net217 - Networking 2",
+        "GE107 - Purposive Communication",
+        "QuaMeth222 - Quantitative Methods",
+        "PathFit 4 - Choice of Dance, Sports...",
+        "IPS - Indigenous Peoples' Studies"
+      ]
+    },
+    "3rd Year": {
+      "1st Semester": [
+        "GE108 - Ethics",
+        "GE109 - Life and Works of Rizal",
+        "Technopre - Technopreneurship",
+        "SIA311 - Systems Integration and Architecture 1",
+        "MOR311 - Methods of Research for IT/IS",
+        "IT Electv3 - Project Management",
+        "IT Prof EL1 - IT Prof EL 1",
+        "IT Prof EL2 - IT Prof EL 2"
+      ],
+      "2nd Semester": [
+        "IAS321 - Information Assurance and Security 1",
+        "SP321 - Social and Professional Issues",
+        "Capstone 1 - Capstone Project 1",
+        "CC326 - Application Development and Emerging Technologies",
+        "IT Electv4 - System Administration and Maintenance",
+        "IT ProfEl 3 - IT Prof El 3",
+        "IT ProfEl 4 - IT Prof El 4"
+      ]
+    },
+    "4th Year": {
+      "1st Semester": [
+        "SIA413 - Systems Integration and Architecture 2",
+        "IAS412 - Information Assurance and Security 2",
+        "Capstone 2 - Capstone Project 2",
+        "IT ProfEl5 - IT Prof EL 5",
+        "IT ProfEl6 - IT Prof EL 6"
+      ],
+      "2nd Semester": [
+        "ITPRac - Internship / OJT / Practicum (486 hours)"
+      ]
+    }
+  };
+
+  const availableSubjects = selectedYearLevel && selectedSemester 
+    ? curriculum[selectedYearLevel]?.[selectedSemester] || [] 
+    : [];
+
+  const handleYearLevelChange = (e) => {
+    setSelectedYearLevel(e.target.value);
+    setSelectedSubject('');
+  };
+
+  const handleSemesterChange = (e) => {
+    setSelectedSemester(e.target.value);
+    setSelectedSubject('');
+  };
 
   // ==========================================
   // 1. FETCH LIVE DATA FROM SUPABASE
@@ -143,7 +243,9 @@ const RequirementsPage = () => {
         form.append("userId", user.id);
         form.append("category", selectedItem.category);
         form.append("school_year", "2025-2026");
-        form.append("semester", "1st Semester");
+        form.append("academic_year", selectedYearLevel);
+        form.append("semester", selectedSemester);
+        form.append("subject", selectedSubject);
 
         const res = await fetch("http://localhost:5000/api/submissions/replace-file", {
           method: "PUT",
@@ -185,7 +287,9 @@ const RequirementsPage = () => {
       
       // Provide defaults needed by your backend routing
       form.append("school_year", "2025-2026"); 
-      form.append("semester", "1st Semester");
+      form.append("academic_year", selectedYearLevel);
+      form.append("semester", selectedSemester);
+      form.append("subject", selectedSubject);
       form.append("document_type", selectedItem.name);
 
       const res = await fetch("http://localhost:5000/upload-material", {
@@ -235,6 +339,9 @@ const RequirementsPage = () => {
   const handleOpenModal = (item) => {
     setSelectedItem(item);
     setUploadFile(null); // Clear previous file
+    setSelectedYearLevel('');
+    setSelectedSemester('');
+    setSelectedSubject('');
     setIsModalOpen(true);
   };
 
@@ -518,6 +625,53 @@ const RequirementsPage = () => {
                   <span>This will replace your currently uploaded file.</span>
                 </div>
               )}
+
+              <div className="freq-modal-inputs" style={{ marginBottom: '16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div style={{ display: 'flex', gap: '12px' }}>
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <label style={{ fontSize: '14px', fontWeight: '500', color: '#475569' }}>Year Level</label>
+                    <select 
+                      value={selectedYearLevel} 
+                      onChange={handleYearLevelChange}
+                      required
+                      style={{ padding: '10px', borderRadius: '8px', border: '1px solid #e2e8f0', outline: 'none' }}
+                    >
+                      <option value="">Select Year Level</option>
+                      {Object.keys(curriculum).map(year => (
+                        <option key={year} value={year}>{year}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <label style={{ fontSize: '14px', fontWeight: '500', color: '#475569' }}>Semester</label>
+                    <select 
+                      value={selectedSemester} 
+                      onChange={handleSemesterChange}
+                      required
+                      style={{ padding: '10px', borderRadius: '8px', border: '1px solid #e2e8f0', outline: 'none' }}
+                    >
+                      <option value="">Select Semester</option>
+                      <option value="1st Semester">1st Semester</option>
+                      <option value="2nd Semester">2nd Semester</option>
+                    </select>
+                  </div>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  <label style={{ fontSize: '14px', fontWeight: '500', color: '#475569' }}>Subject</label>
+                  <select 
+                    value={selectedSubject} 
+                    onChange={(e) => setSelectedSubject(e.target.value)}
+                    required
+                    disabled={!selectedYearLevel || !selectedSemester}
+                    style={{ padding: '10px', borderRadius: '8px', border: '1px solid #e2e8f0', outline: 'none', background: (!selectedYearLevel || !selectedSemester) ? '#f8fafc' : 'white' }}
+                  >
+                    <option value="">Select Subject</option>
+                    {availableSubjects.map((subj, idx) => (
+                      <option key={idx} value={subj}>{subj}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
 
               <div className="freq-file-dropzone">
                 <div className="freq-dropzone-inner">

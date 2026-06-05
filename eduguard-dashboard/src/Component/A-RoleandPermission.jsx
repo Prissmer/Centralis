@@ -3,19 +3,18 @@ import "./Style/A-RoleandPermission.css";
 import { 
   FaShieldAlt, 
   FaChalkboardTeacher, 
-  FaUserGraduate, 
   FaSearch, 
   FaBell 
 } from 'react-icons/fa';
 
 const RoleAndPermission = () => {
   const permissions = [
-    { module: "User Management", admin: true, faculty: false, student: false },
-    { module: "System Settings", admin: true, faculty: false, student: false },
-    { module: "Create Assessments", admin: true, faculty: true, student: false },
-    { module: "View Materials", admin: true, faculty: true, student: true },
-    { module: "Upload Materials", admin: true, faculty: true, student: true },
-    { module: "AI Reports", admin: true, faculty: true, student: false },
+    { module: "User Management", admin: true, faculty: false },
+    { module: "System Settings", admin: true, faculty: false },
+    { module: "Create Assessments", admin: true, faculty: true },
+    { module: "View Materials", admin: true, faculty: true },
+    { module: "Upload Materials", admin: true, faculty: true },
+    { module: "AI Reports", admin: true, faculty: true },
   ];
 
   return (
@@ -79,15 +78,6 @@ const RoleAndPermission = () => {
           </div>
         </div>
 
-        <div className="role-card">
-          <div className="role-icon-box blue">
-            <FaUserGraduate />
-          </div>
-          <div className="role-info">
-            <h3>Student</h3>
-            <p>View materials & submit work</p>
-          </div>
-        </div>
       </div>
 
       {/* Permission Matrix */}
@@ -99,7 +89,6 @@ const RoleAndPermission = () => {
               <th>MODULE</th>
               <th>ADMIN</th>
               <th>FACULTY</th>
-              <th>STUDENT</th>
             </tr>
           </thead>
           <tbody>
@@ -111,9 +100,6 @@ const RoleAndPermission = () => {
                 </td>
                 <td>
                   <input type="checkbox" checked={item.faculty} readOnly className="matrix-checkbox" />
-                </td>
-                <td>
-                  <input type="checkbox" checked={item.student} readOnly className="matrix-checkbox" />
                 </td>
               </tr>
             ))}

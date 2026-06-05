@@ -4,8 +4,8 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../Context/AuthContext";
 import { supabase } from "../lib/supabase";
 import "./Style/F-Notifications.css";
-import { 
-  FaCheck, FaTimes, FaExclamation, FaClock, FaBell, FaTrash, 
+import {
+  FaCheck, FaTimes, FaExclamation, FaClock, FaBell, FaTrash,
   FaArchive, FaInfoCircle, FaCalendarAlt, FaClipboardList,
   FaExclamationTriangle, FaFileAlt, FaChevronRight, FaChevronLeft
 } from "react-icons/fa";
@@ -35,7 +35,7 @@ const Notifications = () => {
       try {
         const today = new Date();
         const todayStr = today.toISOString().split('T')[0];
-        
+
         const { data: reqs } = await supabase
           .from('requirements')
           .select('*')
@@ -53,7 +53,7 @@ const Notifications = () => {
           if (!req.due_date) return;
           const dueDate = new Date(req.due_date);
           const dueDateStr = dueDate.toISOString().split('T')[0];
-          
+
           if (dueDateStr === todayStr) {
             const deadlineId = `deadline-${req.requirement_id}-${todayStr}`;
             const deadlineTime = dueDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
@@ -158,7 +158,7 @@ const Notifications = () => {
       let title = data.title;
       let message = data.message;
       let details = {};
-      
+
       if (data.type === "NEW_DEADLINE") {
         notifType = "warning";
         targetLink = "/requirement";
@@ -195,14 +195,14 @@ const Notifications = () => {
           dueDate: data.dueDate ? new Date(data.dueDate).toLocaleString() : 'Not specified'
         };
       } else if (data.type === "ACKNOWLEDGMENT") {
-        notifType = "success"; 
+        notifType = "success";
         targetLink = "/materials";
         title = "✅ Document Acknowledged";
       }
 
       const newId = `live-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
       const newNotification = {
-        id: newId, 
+        id: newId,
         title: title,
         message: message,
         time: getRelativeTime(new Date()),
@@ -212,15 +212,15 @@ const Notifications = () => {
         borderColor: notifType,
         isRead: false,
         isArchived: false,
-        isNew: true, 
+        isNew: true,
         actionLink: targetLink,
         details: details
       };
 
       setNotifications((prev) => {
         // Prevent duplicate if same message received within 2 seconds
-        const recentDup = prev.find(n => 
-          n.title === title && n.message === message && 
+        const recentDup = prev.find(n =>
+          n.title === title && n.message === message &&
           (Date.now() - new Date(n.timestamp).getTime()) < 2000
         );
         if (recentDup) return prev;
@@ -255,7 +255,7 @@ const Notifications = () => {
   };
 
   const renderIcon = (type) => {
-    switch(type) {
+    switch (type) {
       case 'success': return <FaCheck />;
       case 'error': return <FaTimes />;
       case 'warning': return <FaCalendarAlt />;
@@ -265,7 +265,7 @@ const Notifications = () => {
   };
 
   const getIconBgClass = (bg) => {
-    switch(bg) {
+    switch (bg) {
       case 'success': return 'icon-bg-success';
       case 'error': return 'icon-bg-error';
       case 'warning': return 'icon-bg-warning';
@@ -275,7 +275,7 @@ const Notifications = () => {
   };
 
   const getBorderColorClass = (color) => {
-    switch(color) {
+    switch (color) {
       case 'success': return 'border-success';
       case 'error': return 'border-error';
       case 'warning': return 'border-warning';
@@ -285,7 +285,7 @@ const Notifications = () => {
   };
 
   const getBgClass = (color) => {
-    switch(color) {
+    switch (color) {
       case 'success': return 'bg-success-light';
       case 'error': return 'bg-error-light';
       case 'warning': return 'bg-warning-light';
@@ -372,7 +372,7 @@ const Notifications = () => {
                   <div className={`notification-icon ${getIconBgClass(notification.iconBg)}`}>
                     {renderIcon(notification.type)}
                   </div>
-                  
+
                   <div className="notification-content" style={{ flex: 1 }}>
                     <div className="notification-header">
                       <h4 style={{ fontWeight: notification.isRead ? '500' : '700' }}>
@@ -381,9 +381,9 @@ const Notifications = () => {
                       </h4>
                       <span className="notification-time">{notification.time}</span>
                     </div>
-                    
+
                     <p className="notification-message">{notification.message}</p>
-                    
+
                     {/* Rich Details Section */}
                     {notification.details && Object.keys(notification.details).length > 0 && (
                       <div style={{
@@ -426,7 +426,7 @@ const Notifications = () => {
                       </div>
                     )}
                   </div>
-                  
+
                   <div className="notification-actions">
                     <button className="action-icon" onClick={(e) => { e.stopPropagation(); archiveNotification(notification.id); }} title="Archive">
                       <FaArchive />
